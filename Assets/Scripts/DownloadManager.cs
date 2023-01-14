@@ -10,7 +10,7 @@ public class DownloadManager : MonoBehaviour
     public void GetAllCustomSongs()
     {
         displayManager.ResultText.SetText("Getting custom songs...");
-
+        
         int lastTimeMs = Preferences.GetLastDownloadedTimeMs();
         displayManager.DebugLog($"Downloading songs after {lastTimeMs}");
     }

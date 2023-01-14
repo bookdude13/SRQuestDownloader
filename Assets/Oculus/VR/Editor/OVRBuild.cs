@@ -583,7 +583,7 @@ partial class OculusBuildApp : EditorWindow
         gradleBuildProcess.Exited += new System.EventHandler(
             (s, e) =>
             {
-                UnityEngine.Debug.Log("Gradle: Exited");
+                UnityEngine.Debug.Log("Gradle: Exited: " + e.ToString());
             }
         );
 

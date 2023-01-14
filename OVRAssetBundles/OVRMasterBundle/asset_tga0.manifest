@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 3604863211
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 40c1790764348fdfe2d4c0e67011d61e
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: b0363f7088f9761414f730641bf9a24b
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Oculus/VR/Textures/OculusTouchForQuestAndRiftS/OculusQuestTouchControllerTexture.tga
+- Assets/Oculus/VR/Textures/OculusTouchForQuest2/OculusTouchForQuest2_AlbedoRoughness.tga
+Dependencies: []

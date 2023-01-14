@@ -189,6 +189,9 @@ PlayerSettings:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  - {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
+  - {fileID: -8196854396901781169, guid: 1a4c68ca72a83449f938d669337cb305, type: 2}
+  - {fileID: -1155550427088502077, guid: 4930e232fa7df774585c2a41334c1b60, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -303,8 +306,8 @@ PlayerSettings:
   AndroidTargetDevices: 1
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: C:/Users/rfred/OneDrive/Documents/UnityKeystore/srquestdownloader.keystore
-  AndroidKeyaliasName: prod
+  AndroidKeystoreName: '{dedicated}: srquestdownloader.keystore'
+  AndroidKeyaliasName: dev
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 0
   AndroidIsGame: 1

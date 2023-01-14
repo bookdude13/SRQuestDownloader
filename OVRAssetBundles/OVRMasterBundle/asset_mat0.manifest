@@ -1,0 +1,32 @@
+ManifestFileVersion: 0
+CRC: 3938236228
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 0d4ce71a2face3890e3b4a2ffa706b98
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: f9f3d136959ac0e7043e721e899342fb
+HashAppended: 0
+ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/Oculus/VR/Meshes/OculusTouchForQuestAndRiftS/Materials/OculusTouchForQuestAndRiftS_Material.mat
+- Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/MetaQuestProLeft_Material.mat
+- Assets/Oculus/SampleFramework/Usage/Locomotion/Materials/DebugDrawLine.mat
+- Assets/Oculus/VR/Meshes/OculusTouchForRift/Materials/OculusTouchForRift_Material.mat
+- Assets/ExampleAssets/Materials/Skybox Light.mat
+- Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/batteryIndicator_mat.mat
+- Assets/Oculus/VR/Meshes/OculusTouchForQuest2/Materials/OculusTouchForQuest2_MAT.mat
+- Assets/Oculus/VR/Meshes/MetaQuestTouchPro/Materials/MetaQuestProRight_Material.mat
+- Assets/Materials/mat-floor.mat
+- Assets/Materials/skybox.mat
+Dependencies:
+- C:/Users/rfred/git/SRQuestDownloader/OVRAssetBundles/OVRMasterBundle/asset_png0
+- C:/Users/rfred/git/SRQuestDownloader/OVRAssetBundles/OVRMasterBundle/asset_tga0

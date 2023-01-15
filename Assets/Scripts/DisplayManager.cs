@@ -7,13 +7,8 @@ using Oculus.Platform;
 
 public class DisplayManager : MonoBehaviour
 {
-    public TextMeshProUGUI LastModifiedText;
-    public TextMeshProUGUI ResultText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
-
-    private readonly string lastModifiedLabel = "Last Modified: ";
-    private readonly string resultLabel = "Result: ";
 
     private List<string> debugBuffer = new List<string>();
     private List<string> errorBuffer = new List<string>();
@@ -21,23 +16,8 @@ public class DisplayManager : MonoBehaviour
 
     private void Awake()
     {
-        LastModifiedText.SetText(lastModifiedLabel + Preferences.GetLastDownloadedTimeMs());
-        LastModifiedText.gameObject.SetActive(true);
-
-        ResultText.SetText(resultLabel);
-        ResultText.gameObject.SetActive(true);
-
         DebugText.gameObject.SetActive(true);
         ErrorText.gameObject.SetActive(true);
-    }
-
-    private void SetError(string message)
-    {
-        ResultText.SetText("Error: " + message);
-        ResultText.color = Color.red;
-        ResultText.gameObject.SetActive(true);
-
-        LastModifiedText.gameObject.SetActive(false);
     }
 
     public void ClearLogs() {

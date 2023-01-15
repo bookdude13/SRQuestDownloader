@@ -152,7 +152,7 @@ public class DownloadManager : MonoBehaviour
     /// Move synth custom content from the Downloads folder to custom content directories.
     /// Extracts zip files that look like they were downloaded from synthriderz.com
     private IEnumerator MoveDownloadedFiles() {
-        displayManager.ResultText.SetText("Moving custom songs from Download folder...");
+        displayManager.DebugLog("Trying to move custom content from Download folder...");
 
         if (isMovingFiles) {
             displayManager.DebugLog("Already moving! Ignoring...");

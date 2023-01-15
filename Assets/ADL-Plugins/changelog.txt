@@ -1,0 +1,681 @@
+version 2.9.2
+
+- ZIP: Added the extract_entries function which allows to extract a specific list of entries of a zip archive.
+
+
+version 2.9.1
+
+- Fixed compatibility issues with Unity 2022 for the Lz4, Lzma, Brotli and Flz plugin scripts.
+- ZIP: Updated the WebGL demo script to work correctly with NativeFileBuffers. (On Unity2022.x+ you should enable http connection for the demo)
+- Brotli: Added a separate WebGL demo scene.
+
+
+version 2.9
+
+- Updated WebGL plugins for Unity 2021+
+- Added a custom download functions to the plugins, to download a file to a native (unmanaged) memory buffer.
+- All Plugins: Ability to pass an IntPtr unmanaged buffer as a file buffer where supported.
+- ZIP: IntPtr (native memory buffers) and inMemory lzip class can be passed now as a file Buffer.
+  This allows avoiding memory spikes when downloading large files to unzip.
+- ZIP: Gzip file functions return -8 now on cancel.
+
+- Brotli:WebGL: fixed an issue with not releasing a buffer on decompression.
+- Brotli:WebGL: fixed an issue with Development builds.
+
+- Native buffer examples updated because dropbox would not allow the webrequest function to work properly.
+- ZIP: CompressDir function: fixed an issue where the inplace zip creation (without adding a custom output file) would truncate the last character.
+- Removed Linux x86 plugins for Unity 2019+ (no longer supported by Unity)
+- Added Android x86_64 plugins for Unity 2019+
+- Removed Windows x86 plugins for Unity 2021+ (no longer supported by Unity)
+
+
+version 2.8.1
+
+- Added Android x86_64 plugins to support Chrome OS (2019, 2020 and 2021 versions).
+
+
+version 2.8
+
+- ZIP: Critical Fix for the delete_entry functions.
+- ZIP: Added MacOS bundles: Intel only, Silicon only, Universal (Intel + Silicon)
+
+
+
+version 2.7.5
+
+- Zip: Fix for Marshal.StringToCoTaskMemAuto -> Marshal.StringToHGlobalAuto on Unity 2019.3 or older (il2cpp Android)
+- Brotli: buffer functions got uncompressed size parameter.
+- MacOS bundles BigSur. Optional silicon support via zipped .bundles  (MacOS 10.9 minimum)
+
+
+version 2.7.4
+
+- Brotli: Added support for WebGL to allow decompression of brotli buffers.
+- 7Zip: Fixed some issues with the demo script.
+- ZIP: Fixed some preprocessor issues that caused compilation errors on some platforms.
+- ZIP: The setPermissions function was accidentaly removed in a previous update. Now reinstated.
+- ZIP: Fixed date issues when extracting zip archives.
+
+
+version 2.7.3
+
+- ZIP: Windows: reintroduced the lzip.setEncoding function, since some applications do not use utf8 encoding for filenames.
+
+
+version 2.7.2 [important update]
+
+- ZIP: Windows: Resolved all issues with Unicode paths (reading and writing)
+- ZIP: All platforms: All file paths/names will be treated as utf-8
+- ZIP: Gzip file decompression got 4 times faster.
+- FLZ: Fixed the decompress buffer function.
+
+version 2.7.1
+
+- ZIP: Fixed Unicode issues with the windows plugins.
+
+
+version 2.7 [Major update]
+
+- 7ZIP: Added byte level progress for 7zip extraction (whole files/fileBuffers or entries)
+- 7ZIP: Added byte level progress for lzma alone creation/decompression.
+- 7ZIP: For this reason 3 new functions have been introduced. See examples and docs.
+- 7ZIP: Improved entry search and extraction speed.
+- 7ZIP: Fixed an issue with entries extraction, where some unwanted empty folders could be extracted.
+- 7ZIP: Decompress buffer imporoved.
+- 7ZIP: Fixed issues with files larger then 2GB on 64bit systems.
+- 7ZIP: Linux: reintroduced FileBuffers for Linux.
+- 7ZIP: Protection against illegal characters in 7z entries.
+- 7ZIP: The get7zInfo and get7zSize functions run faster and no more a temp log is needed.
+
+- LZ4: Progress of decompression is a ulong now.
+
+
+- ZIP: Added support for tar/untar.
+- ZIP: Added support for tar.gz, tar.bz2 creation.
+- ZIP: Protection against illegal characters in entries.
+- ZIP: Added ability to create and decompress bz2 files.
+- ZIP: Protection against illegal characters in zip entries.
+- ZIP: Faster reaction to the cancel command.
+- ZIP: Fixed gzip file decompression issues.
+- ZIP: gzip uncompress progress relies on the compressed files size now.
+
+- ALL: tvOS uses the same functions as WebGL now, since it does not allow access to the file system.
+- ALL: Combined tvOS and WebGL in one demo scene.
+       (WebGL sample scenes renamed to reflect the above changes.)
+- ALL: Updated and refactored the demo scene and scripts to reflect the new changes.
+- ALL: Removed the Streaming Assets folder files. All example files are downloaded now.
+
+- ALL:LINUX: Only one glibc version of Linux plugins now provided (glibc2.17)
+
+In general, a lot more has been done to improve the stability and usability of the plugins.
+
+
+version 2.6.3
+
+- Brotli: Fixed the buffer functions.
+
+
+version 2.6.2
+
+- 7zip: Windows: Unicode issues resolved.
+- 7zip: Added a cancel function when decompressing 7zip archives with multiple entries.
+- 7zip: Linux: FileBuffers disabled for now on Linux since they are not stable. 
+- ZIP: Hotfix: the previous update broke the decompression of zip file. It is now fixed!
+- ZIP: Added 2 new functions to gzip and ungzip archives on the File System.
+
+
+version 2.6.1
+
+- ZIP: Hot fix for zips that contain the __MACOSX folder.
+- ZIP: Added simulator plugin for iOS.
+
+
+version 2.6 (ZIP: Important feature and maintenance update)
+
+- ZIP: Setting level of compression to zero will now use the STORE method.
+- ZIP: Added the setCancel() function to cancel the compress_File, compressDir, compress_File_List, decompress_File, extract_entry, entry2Buffer functions.
+- ZIP: Added the ability to get byte level progress when compressing files.
+- ZIP: Android arm64-v8a plugin should decompress files larger then 2GB now.
+- ZIP: Windows: compression with unicode characters in path should work correct now.
+- ZIP: The getEntrySize function returns a ulong value now.
+- ZIP: The getFileInfo function filled Lists for uncompressed, compressed and localOffset are filled with UInt64 values now.
+- ZIP: The getFileInfo function fills a new list localOffset. Useful for archives with the STORE method to find the position in the zip. (you should add + 30 bytes + name.length to get the final offset)
+- ZIP: Demo script updated to reflect the new changes.
+- 7zip: When extracting a 7z archive the output folder should be created when not existing now.
+
+version 2.58
+
+- ZIP: fixed WebGL issues on Unity 2019.x
+- fixed ios/tvos issue with bitcode plugins on xcode 11.x
+- Lzma/7zip: fixed issue with the windows plugins. Now bcj and ppmd are back.
+
+
+version 2.57
+
+- ZIP: Process of decompression in bytes now returned as ulong.
+- ZIP: Fixed an issue with ios/tvOS caused by the 1.64 update.
+
+
+version 2.56
+
+- ZIP: Hotfix for the compressDir/compress_File_List functions. The plugin could crash when thousands of files were going to get compressed.
+
+
+version 2.55
+
+- ZIP: Using compress_File/compress_File_List/compressDir to append multiple files to a zip were very slow. Now compress_File_List and compressDir work very fast.
+- ZIP: For the same reason the inMemory class got some low level functions to allow much faster appending of multiple entries. See examples and docs.
+
+version 2.54
+
+- ZIP: Critical fix for the inMemory zip creation functions. All users that use these functions should update to this version.
+- ZIP: Added a public function to the inMemory struct for getting the byte[] buffer of the inMemory created zip.
+
+
+version 2.53 [Major update]
+
+- ZIP: WebGL has now full zip support. Obviously not on the file system but on memory buffers. (bz2 method not supported yet.)
+- ZIP: Webgl got zlib buffer support again. (Was misplaced in a previous update.)
+- ZIP: Added the ability to find merged/hidden zip/gzip archives in files or buffers and extract/get info from them.
+- ZIP: iOS/tvOS: fixed potential issues with admob/facebook/google sdk.
+- ZIP: Windows/Android: fixed bz2 issue.
+- ZIP: bz2 method support for inmemory compression. (not for macos/ios/tvos/webgl.)
+- All Plugins-tvOS: fixed preprocessor issues on newer versions of Unity.
+- plugin binary sizes got smaller.
+- updated the benchmark script.
+
+version 2.52
+
+- ZIP: fixed some C# issues with the compress_dir and compress_file_list functions
+
+
+version 2.51
+
+- ZIP: iOS/tvOS: fixed duplicate symbol issue with Unity2018.
+
+
+version 2.50
+
+- ZIP: iOS/tvOS: fixed some conflict issues with the Facebook SDK.
+
+version 2.49
+
+- tvOS plugins were accidentally not provided as bitcode by default.
+
+version 2.48
+
+- tvOS has its own plugin folder now.
+- iOS/tvOS plugins are provided by default as bitcode enabled. (non bitcode versions are still provided.)
+
+version 2.47
+
+- 7z/lzma: fixed some issues with the windows plugins.
+- ZIP: Added the ability to create In Memory zip archives and manipulate them.
+- MacOS: removed the 32bit only bundle.
+- Replaced the www functions with UnityWebRequest.
+- Removed the watchOS plugins.
+- Docs updated.
+
+version 2.46
+
+- LZMA/Windows x86/Il2cpp: fixed a crash issue.
+
+
+version 2.45
+
+- Android arm64 plugins for brotli, flz, lz4 & 7zip updated to fix a crash when using FileBuffers.
+
+
+version 2.44
+
+- ZIP: buffer2File fix. (was adding modified time field when it was not needed.)
+
+- Added Linux glibc 2.17 version plugins (useful for SteamOS).
+
+
+version 2.43
+
+- ZIP: Fixed some preprocessor directives.
+
+version 2.42
+
+- ZIP: Added the ability to create split zip archives.
+- ZIP: Fixed an issue with the iOS bitcode enabled plugin.
+
+version 2.41
+
+- Addded arm64-v8a Android support for all plugins.
+ 
+- Removed WSA support for all plugins.
+
+- Separated the plugin folders for each category.
+
+- MacOS plugins compiled only for 64 bit now.
+
+- ZIP: Resolved some il2cpp issues.
+
+- ZIP: Unicode filenames on decompression should work now on Windows.
+
+- ZIP: decompress of split zip archives in the form of 1.zip, 1.z01, 1.z02, ...
+
+- LZ4/WebGL compress buffer fix.
+
+
+version 2.32
+
+- ZIP: Hotfix for password encoded zip files not creating folders.
+- ZIP: Hotfix for the compressDir function.
+
+
+version 2.31
+
+- ZIP: Added the entry2FixedBuffer function to decompress an entry to a fixed size buffer.
+
+- ZIP: The getFileInfo is now much faster on zip archives with thousands of files.
+
+
+version 2.30
+
+- ZIP: Added the getEntryDateTime function, to get DateTime for a specific entry
+
+- Updated the file sample links of the demos, due to a server switch.
+
+
+version 2.29
+
+- ZIP: Removed encryption/decryption for WSA due to certification reasons.
+
+
+
+version 2.28.2
+
+- ZIP: iOS/MacOS Hotfix.
+
+- ZIP: bz2 method removed for MacOS/iOS/watchOS/tvOS because it is not working correctly.
+
+
+
+version 2.28.1
+
+- Zip: The -lz linking flag should be added for iOS/watchOS/tvOS on xcode.
+
+- Plugins moved to ADL-Plugins folder.
+
+
+
+version 2.28 [Major zip update]
+
+- Zip: Added Encryption/Decryption support.
+
+- Zip: Added bz2 as an alternative compression/decompression method of zip archives.
+
+- Zip: WSA supports now FileBuffers.
+
+- Zip: On WSA encryption is supported only on UWP10 x64.
+
+- Zip: Better Unicode support on Windows platforms.
+
+- Zip: Faster and more reliable getInfo function. (intermediate file is not used anymore.)
+
+- Zip: Low level functions have been removed due to inconsistency between platforms.
+
+- Zip: Added the ability to compress a list of files into a single archive.
+
+
+
+
+version 2.27
+
+- Added webGL LZ4 support for compression / decompression of buffers.
+
+
+
+version 2.26
+
+- Reintroduced webGL support for zip/gzip, flz and lzma compression/decompression of buffers.
+
+
+version 2.25
+
+- Zip: hotfix for zip files which use backslashes instead of slashes for directories
+
+- Zip: Linux/MacOS fixes for the low level functions on standalone builds.
+
+- Zip/ios: watchOS & tvOS. Added simulator plugins.
+
+
+version 2.24
+
+- Zip: Added zip64 support.
+
+- Zip: Added low level functions (except for WSA) - see demo and lzip.cs.
+
+- Zip: WSA8.1 fixes.
+
+- Zip: Added a setEncoding function for Windows and WSA10 to set text encoding on file names.
+
+- Zip: Added a validate function to check sanity of zip files.
+
+- Zip: The getTotalFiles will now return only the true files number (no folders and no zero byte files).
+
+- All plugins: Removed WebGL support since it is almost impossible to work on Unity5.5.
+
+
+version 2.22
+
+- changed links for demo projects
+
+
+version 2.21
+
+- fix for a WSA/x86/il2cpp crash.
+
+
+version 2.2
+
+Removed WebGL support for the LZ4 plugin since there are too many conflicts with Unity5.5.
+If you have the LZ4 webgl plugin in your project and you are on Unity5.5 you are advised to removed it.
+
+
+version 2.19
+
+zip/All platforms: added the delete_entry function to delete an entry in a zip file.
+zip/All platforms: added the replace_entry function to replace an entry in a zip file(from a filepath or a buffer).
+
+
+version 2.18
+
+iOS/zip/bitcode: removed older version of bitcode compiled lib which was missing the new ungzip function.
+
+
+version 2.17
+
+zip/Windows: A small fix to the getTotalFiles function to allow to work correctly with FileBuffers.
+
+
+version 2.16
+
+ZIP All Platforms: Fixed a bug that was introduced in a previous update that had to with the outbuffer length. Now the gzip functions behave as intended.
+
+ZIP Windows: Now you can treat a zip file that is loaded in a byte buffer as a file.
+
+ZIP ios/gzip: updated the gzip functions.
+
+
+version 2.15
+
+Linux: fixed preprocessor directives for Unity5.4.x and up.
+
+
+version 2.14
+
+gzip: Fixed Android issues and added a 2nd ungzip function.
+
+
+version 2.13
+
+zip/Windows: better unicode support. Unity5.4 compatibility fix.
+
+
+version 2.12
+
+lzma: fixed a bug with lzma compression. (lzma compression on already compressed files would produce corrupted lzma files.)
+
+
+version 2.11
+
+zip/iOS: hotfix to fix a GcHandle crash.
+LZ4: added compress buffer to a specific location of a fixed size buffer.
+LZ4: added decompress an lz4 buffer from a specific location of a fixed size buffer.
+
+
+version 2.1 (Major update)
+
+- Added Brotli support for all platforms except WebGL & watchOS.
+
+- zip: added gzip support. Can operate on buffers with or without headers/footers.
+
+- zip: added progress for individual file decompression.
+
+- Android, Linux, iOS, MacOSX got chmod support to set file permissions.
+
+- iOS: made the plugins much smaller in size.
+
+- Reorganized the demo folders. You are adviced to delete the demo folders before updating the sample scenes.
+
+
+
+version 2.09
+
+- Added bitcode supported plugins for iOS
+
+
+version 2.08
+
+- Compatibility fixes for Windows Phone 8.1 and WSA8.1. Should work out of the box now.
+
+- Added a benchmark scene.
+
+
+version 2.07
+
+- lzma plugin: fix for decompression of asset bundles.
+
+
+version 2.06
+
+- Winx86, Winx86_64 & WSA plugins: full unicode support on paths and filenames. Was problematic before.
+
+
+version 2.05 (important update)
+
+- progress functions are the same on all platforms now. That introduced a small breaking code change.
+  Instead of providing a referenced integer or float you provide a single item integer of float array.
+  Removed deprecated iOS functions to get progress.
+
+- iOS: renamed some native functions to avoid collision with unity's libiphone lib.
+
+- lzma: added a function to decompress a compressed Asset Bundle.
+
+- lzma: added an example on how to decompress a compressed asset bundle from the StreamingAssets Folder.
+
+- zip: fixed an issue with decompressing of zip files containing the '__MACOSX' folder.
+  The '__MACOSX' folder will be ignored along with files starting with '._' and files with 0 bytes size.
+
+
+
+version 2.0 (Major update)
+
+- Added WebGL support for all plugins!
+
+- Linux, iOS, Android, MacOSX can treat now buffers as files. That means if you have a file in www.bytes
+  you can perform operations directly on the buffer.
+  For Android this is very useful since you can decompress from Streaming Assets without copying to
+  Persistent data path.
+
+- all plugins/all platforms: added support for fixed buffer operations to avoid memory allocations.
+
+- lzma: added support for partial buffer compression.
+
+- lzma: added the ability to modify the compression properties for buffers and lzma alone files.
+
+- refactored the preprocessor directives to comply with Unity 5.3.
+
+- iOS: simulator plugins have now universal, i386 and x86_64 variations.
+
+
+
+version 1.9.1
+
+- added fastLZ support.
+
+
+version 1.9
+
+- Added LZ4 support. (Read the dedicated documentation for it.)
+
+- Discontinued Blackberry support.
+
+- Minor improvements for the lzma plugins.
+
+- WSA10: Accidentally in the previous update the largeFiles support for 7z files was removed. Now it is back in.
+
+- added a folder with the plugins separated as unitypackage files.
+
+
+version 1.8
+
+- iOS: added tvOS, watchOS and simulator plugins.
+
+- Unity5.2: added WSA SDK10 NetCore support. That means even XboxOne is supported.
+
+(Delete the old Metro plugins folder, since it is replaced with a different naming scheme.)
+
+
+
+version 1.7.7
+
+- zip: corrected misbehaviour of the compressDir functions on some operating systems.
+
+
+version 1.7.6
+
+- 7zip iOS: fixed a bug in the get7zInfo function when extracting from the StreamingAssets folder.
+
+- zip iOS : updated the ios plugins to have minimum iOS support 6.0
+
+
+version 1.7.5
+
+- removed vc++2013 dependency for windows editor.
+
+- zip/7zip iOS: added extra workaround functions to get the progress of files when extracting multiple files in multiple threads. See documentation!
+
+
+version 1.7.4
+
+- 7zip iOS: added an extra function to get properly the progress of the extracted files.
+
+- 7zip iOS: now you can use the largeFiles flag when decompressing a file that is stored in StreamingAssets to some other folder with writing permissions.
+
+- zip: - added 2 global integers zipFiles & zipFolders that get updated when calling the getFileInfo function.
+
+
+version 1.7.3
+
+- Fix for the CompressDir function for the zip plugin.
+
+- Total true files in a 7zip file are counted now when calling the get7zInfo function and stored in the trueTotalFiles integer variable.
+
+
+version 1.7.21
+
+- Hotfix for iOS. Issue was conflicting functions between the zip and 7zip plugin.
+
+version 1.7.1
+
+- cleaned up 7z/lzma cs files.
+
+- added a second method on 7zip decompression for not forcing the user to use a ref int to get the extraction progress when not needed/wanted.
+
+
+version 1.7
+
+MAJOR UPDATE:
+
+- Added full ZIP support (see appropriate documentation for more).
+  In short, compression/decompression of files/directories and buffers is supported on all platforms.
+
+- Changed the way how the decompression progress of archives with multiple files is returned.
+  Now you have to provide a referenced integer where the progress will be written to.
+  This was done to avoid shared memory violations when having multiple threads calling the same function.
+
+- Progress works now for Linux and Win8.1 (Phone and WSA)
+
+- Removed some obsolete functions and revamped the code.
+
+- Added an example for Android, to copy a file from the StreamingAssets folder to the PersistantDataPath and do there file operations.
+
+
+
+
+version 1.6.2
+- critical bug fixed in the 7z decode2Buffer function that caused a crash. Works as expected now.
+
+
+version 1.6.1
+- cleaned up the cs code. Less preprocessor directives used now.
+
+- updated Blackberry plugin. Added x86 binary.
+
+
+version 1.6
+
+Major update:
+
+-Ability to compress a buffer to the lzma format and to decompress a buffer that is in the lzma format.
+
+-Added basic support for Windows Phone 8.1 and WSA plugins.
+
+-Added a method to get the current number of files extracted from a 7z archive.
+ (Provides a solution to get progress of decompression when the 7z archive has multiple files.)
+
+ - Fixed a bug in the Linux plugin where folders where not created correctly.
+
+
+version 1.5.8
+Added ppmd decompression method support.
+
+
+version 1.5.7
+Addressed memory leak issues and changed the get7zInfo and get7zSize functions.
+It is recommended to use this verion if you are calling the above functions on 7z archives
+that contain hundreds or thousands of files.
+
+
+version 1.5.5
+Added the ability to decode a specific file in a 7z archive to a byte buffer.
+
+
+version 1.5
+Added the ability to get filename and file size information of a 7z archive.
+Added the ability to encode/decode to/from .lzma alone format.
+
+
+version 1.4.5
+Added experimental Blackberry support.
+Made sure that iOS works on 64bit builds with il2cpp.
+
+
+version 1.4
+Added support for OSX and LINUX.
+Now you should be able to test in the editor and use the lib in standalone applications for win,linux,osx.
+
+
+version 1.3.1
+preprocessor fixes
+
+
+version 1.3
+Added support for x86 and x86_64 windows. A macOS version might come in the future.
+Removed crc checks on android and ios builds for faster extraction.
+
+
+version 1.2.5
+Added support for x86 Android builds.
+Changed the folder structure of the Plugins/Android folder.
+Now the plugins for each platform reside in their own folder named after the platform.
+You don't have to do anything. Unity will copy the correct lib for you whether you build for arm, x86 or both (fat binary).
+
+
+version 1.2.1
+- By mistake in the previous version the iOS library was the Debug one.
+- 3 compiled versions of the library are now included. Debug, Fast and Small, Aggressive optimizations (faster and bigger)
+(the variations are included as zip files in the plugins/iOS folder. Unzip the one you want to use)
+
+
+version 1.2
+- Added iOS support
+- improved the example and the documentation.
+
+

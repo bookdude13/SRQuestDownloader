@@ -7,6 +7,7 @@ using Oculus.Platform;
 
 public class DisplayManager : MonoBehaviour
 {
+    public TextMeshProUGUI LastFetchText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
 
@@ -16,20 +17,30 @@ public class DisplayManager : MonoBehaviour
 
     private void Awake()
     {
+        LastFetchText.gameObject.SetActive(true);
+        UpdateLastFetchTime();
+
         DebugText.gameObject.SetActive(true);
         ErrorText.gameObject.SetActive(true);
     }
 
-    public void ClearLogs() {
+    public void UpdateLastFetchTime() {
+        DateTime lastFetchTime = Preferences.GetLastDownloadedTime().ToLocalTime();
+        LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
+    }
+
+    public void ClearDebugLogs() {
         debugBuffer.Clear();
         DebugText.SetText("");
+    }
 
+    public void ClearErrorLogs() {
         errorBuffer.Clear();
         ErrorText.SetText("");
     }
 
     public void DebugLog(string message) {
-        if (debugBuffer.Count >= 15) {
+        if (debugBuffer.Count >= 20) {
             debugBuffer.RemoveAt(0);
         }
         debugBuffer.Add(message);
@@ -37,10 +48,13 @@ public class DisplayManager : MonoBehaviour
     }
 
     public void ErrorLog(string message) {
-        if (errorBuffer.Count >= 15) {
+        if (errorBuffer.Count >= 20) {
             errorBuffer.RemoveAt(0);
         }
         errorBuffer.Add(message);
         ErrorText.SetText(String.Join("\n", errorBuffer));
+
+        // Also set in debug log for clarity
+        DebugLog(message);
     }
 }

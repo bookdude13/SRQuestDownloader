@@ -10,6 +10,7 @@ public class DownloadManager : MonoBehaviour
     private bool isMovingFiles = false;
     private readonly string MAP_EXTENSION = ".synth";
     private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };
+    private readonly string PLAYLIST_EXTENSION = ".playlist";
 
     public void StartMoveDownloadedFiles()
     {
@@ -68,6 +69,23 @@ public class DownloadManager : MonoBehaviour
         return new string[] {};
     }
 
+    /// Returns list of all playlists downloaded from synthriderz.com located in the given directory.
+    /// If none found or error occurs, returns empty array
+    private string[] GetSynthriderzPlaylistFiles(string rootDirectory) {
+        try {
+            var directoryExists = Directory.Exists(rootDirectory);
+            displayManager.DebugLog($"Getting playlist files from {rootDirectory}. Directory exists? {directoryExists}");
+            if (directoryExists) {
+                var filePaths = new List<string>();
+                return Directory.GetFiles(rootDirectory, $"*{PLAYLIST_EXTENSION}");
+            }
+        } catch (System.Exception e) {
+            displayManager.ErrorLog("Failed to get files: " + e.Message);
+        }
+
+        return new string[] {};
+    }
+
     /// Extracts custom content from a Synthriderz zip file to their respective directories.
     /// zipPath is the path to the zip file
     /// synthDirectory is the path to the root Synth Riders directory for custom content (i.e. SynthRidersUC)
@@ -107,12 +125,16 @@ public class DownloadManager : MonoBehaviour
             var fileName = Path.GetFileName(filePath);
             string destPath = null;
             if (Path.GetExtension(filePath) == MAP_EXTENSION) {
-                // Ignore position within zip file - if it's the right extension, put it in the custom songs dir directly
+                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
                 destPath = Path.Join(synthDirectory, "CustomSongs", fileName);
             }
             else if (STAGE_EXTENSIONS.Contains(Path.GetExtension(filePath))) {
-                // Ignore position within zip file - if it's the right extension, put it in the custom songs dir directly
+                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
                 destPath = Path.Join(synthDirectory, "CustomStages", fileName);
+            }
+            else if (Path.GetExtension(filePath) == PLAYLIST_EXTENSION) {
+                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
+                destPath = Path.Join(synthDirectory, "Playlist", fileName);
             }
 
             if (destPath != null) {
@@ -185,6 +207,24 @@ public class DownloadManager : MonoBehaviour
             yield return null;
             try {
                 // Attempt to "move", overwriting destination if it exists.
+                File.Copy(filePath, destPath, true);
+                File.Delete(filePath);
+            } catch (System.Exception e) {
+                displayManager.ErrorLog($"Failed to move {filePath}! {e.Message}");
+                continue;
+            }
+        }
+
+        displayManager.DebugLog($"Moving downloaded playlist files...");
+        var playlistFilePaths = GetSynthriderzPlaylistFiles(downloadDir);
+        displayManager.DebugLog($"{playlistFilePaths.Length} playlist files found");
+        foreach (var filePath in playlistFilePaths) {
+            var destPath = Path.Join(synthCustomContentDir, "Playlist", Path.GetFileName(filePath));
+            displayManager.DebugLog($"Moving {filePath} to {destPath}");
+            yield return null;
+            try {
+                // Attempt to "move", overwriting destination if it exists.
+                // TODO actually check existing files for matching identifier, since the game can rename them!
                 File.Copy(filePath, destPath, true);
                 File.Delete(filePath);
             } catch (System.Exception e) {

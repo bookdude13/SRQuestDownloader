@@ -11,6 +11,7 @@ using System.Linq;
 public class CustomFileManager : MonoBehaviour
 {
     public DisplayManager displayManager;
+    public LocalDatabase db;
 
     private bool isMovingFiles = false;
     private string synthCustomContentDir = "/sdcard/SynthRidersUC/";
@@ -23,7 +24,10 @@ public class CustomFileManager : MonoBehaviour
 
     private async void Awake()
     {
+        displayManager.DisableFetchingLatest();
+        db = new LocalDatabase(displayManager);
         await ReloadLocalMaps();
+        displayManager.EnableFetchingLatest();
     }
 
     /// Loads all local maps from disk and updates the dictionary
@@ -286,10 +290,14 @@ public class CustomFileManager : MonoBehaviour
         return maps.Where(mapItem => !localMaps.ContainsKey(mapItem.hash)).ToList();
     }
 
-    /// Looks in the given directory and parses out all custom map files
+    /// Refreshes local database metadata. Parses all missing custom map files.
+    /// This saves the updated database.
     /// Returned dictionary is hash: object
     private async Task<Dictionary<string, MapZMetadata>> GetLocalMaps(string synthCustomContentDir) {
         var maps = new Dictionary<string, MapZMetadata>();
+
+        // Make sure local db state is up to date
+        await db.Load();
 
         try {
             var mapsDir = Path.Join(synthCustomContentDir, "CustomSongs");
@@ -298,19 +306,48 @@ public class CustomFileManager : MonoBehaviour
                 return new Dictionary<string, MapZMetadata>();
             }
 
-            var files = Directory.EnumerateFiles(mapsDir, $"*{MAP_EXTENSION}");
+            var files = Directory.GetFiles(mapsDir, $"*{MAP_EXTENSION}");
+            displayManager.DebugLog($"Updating database with map files...");
+            // This will implicitly remove any entries that are only present in the db
+            int count = 0;
+            int totalFiles = files.Length;
             foreach (var filePath in files) {
-                MapZMetadata metadata = await ParseLocalMap(filePath);
-                if (metadata == null) {
-                    displayManager.ErrorLog("Failed to parse map at " + filePath);
-                    continue;
+                MapZMetadata dbMetadata = db.GetFromPath(filePath);
+                if (dbMetadata != null) {
+                    // DB has this version already - good to go
+                    displayManager.DebugLog(Path.GetFileName(filePath) + " already in db");
+                    maps.Add(dbMetadata.hash, dbMetadata);
                 }
-                maps.Add(metadata.hash, metadata);
+                else {
+                    // DB doesn't have this version; parse and add
+                    MapZMetadata metadata = await ParseLocalMap(filePath);
+                    if (metadata == null) {
+                        displayManager.ErrorLog("Failed to parse map at " + filePath);
+                        continue;
+                    }
+                    maps.Add(metadata.hash, metadata);
+                    db.AddMap(metadata);
+                }
+
+                count++;
+                if (count % 25 == 0) {
+                    displayManager.DebugLog($"Processed {count}/{totalFiles}...");
+                    
+                    // Save partial progress; ignore errors
+                    await db.Save();
+                }
             }
+            displayManager.DebugLog($"{totalFiles} local files processed");
         }
         catch (System.Exception e) {
             displayManager.ErrorLog($"Failed to get local maps: {e.Message}");
             return new Dictionary<string, MapZMetadata>();
+        }
+
+        // Successfully loaded maps. Save to db for next run
+        if (!await db.Save()) {
+            displayManager.ErrorLog("Failed to save db");
+            // ignore for now; we still loaded everything fine
         }
 
         return maps;

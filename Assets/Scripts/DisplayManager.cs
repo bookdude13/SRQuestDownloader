@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System;
 using Oculus.Platform;
@@ -11,6 +12,8 @@ public class DisplayManager : MonoBehaviour
     public TextMeshProUGUI LastFetchText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
+    public Button FetchLatestButton;
+    public TextMeshProUGUI FetchLatestButtonText;
 
     private List<string> debugBuffer = new List<string>();
     private List<string> errorBuffer = new List<string>();
@@ -31,6 +34,18 @@ public class DisplayManager : MonoBehaviour
     public void UpdateLastFetchTime() {
         DateTime lastFetchTime = Preferences.GetLastDownloadedTime().ToLocalTime();
         LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
+    }
+
+    public void DisableFetchingLatest() {
+        FetchLatestButton.interactable = false;
+        FetchLatestButtonText.fontStyle = FontStyles.Italic;
+        FetchLatestButtonText.SetText("Loading Local Maps...");
+    }
+
+    public void EnableFetchingLatest() {
+        FetchLatestButtonText.fontStyle = FontStyles.Normal;
+        FetchLatestButtonText.SetText("Fetch Latest Songs");
+        FetchLatestButton.interactable = true;
     }
 
     public void ClearDebugLogs() {

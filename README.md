@@ -38,10 +38,16 @@ Closes this application and launches the Synth Riders application. I haven't tes
 ## Fetch Latest Songs
 This does the following:
 - Get all song hashes from the Z site with published_at values after the "last fetch" date
-- Parse all song metadata from `/sdcard/SynthRidersUC/CustomSongs`
+- Get all local song metadata from `/sdcard/SynthRidersUC/CustomSongs` (see below)
 - Any song hash from Z that isn't present locally is downloaded, first to a temp directory and then moved to `/sdcard/SynthRidersUC/CustomSongs`
 - Any song hash that is local but not on Z is ignored
 - Any song hash that is present in both is skipped (assumed to be up to date)
+
+Local song metadata is cached in `/sdcard/Android/data/com.bookdude13.srquestdownloader/files/SRQD_local.db` for faster parsing time on boot.
+- The cache is based on file name
+- If a file is present locally but not in the cache database, it is parsed and added
+- If a file is present in the database but not locally, it is dropped
+
 
 ## Move From Downloads
 This does the following:
@@ -51,6 +57,8 @@ This does the following:
 ---
 ## Development
 Feel free to extend this as you want. Open issues for bugs and feature requests, and open PRs if you implement some of those yourself. I will try to respond in a timely manner :)
+
+Logs are output to `/sdcard/Android/data/com.bookdude13.srquestdownloader/files/logs/`. Logs older than 7 days are removed at startup.
 
 ---
 ### Disclaimer

@@ -38,6 +38,7 @@ public class DownloadManager : MonoBehaviour
         displayManager.EnableFetchingLatest();
     }
 
+    /// Debug method for cycling through different fetch times
     private int resetTick = 0;
     public void ToggleLastFetchTime() {
         if (resetTick == 0) {
@@ -55,6 +56,12 @@ public class DownloadManager : MonoBehaviour
         }
         
         resetTick = (resetTick + 1) % 4;
+        displayManager.UpdateLastFetchTime();
+    }
+
+    /// Reset fetch time to epoch, so all can be downloaded again if necessary
+    public void ResetFetchTime() {
+        Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
         displayManager.UpdateLastFetchTime();
     }
 

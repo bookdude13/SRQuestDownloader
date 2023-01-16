@@ -147,15 +147,6 @@ public class DisplayManager : MonoBehaviour, ILogHandler
                 break;
             }
         }
-
-        // // Add one last log
-        // oldBuffer.Add($"Persisting logs ({oldBuffer.Count})");
-
-        // // Don't get into an infinite loop - use a different log handler than ourselves
-        // await FileUtils.AppendToFile(String.Join("\n", oldBuffer), GetLogFilePath(), alternateErrorHandler);
-
-        // // Remove persisted logs from buffer so they don't show up repeated next time
-        // persistBuffer(0, oldBuffer.Count - 1);
     }
 
     /// Gets path to log file.

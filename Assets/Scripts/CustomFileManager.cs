@@ -35,7 +35,6 @@ public class CustomFileManager : MonoBehaviour
 
     /// Loads all local maps from disk and updates the dictionary
     private async Task ReloadLocalMaps() {
-        // TODO if this takes too long, have a popup with progress bar?
         localMaps = await GetLocalMaps(synthCustomContentDir);
         displayManager.DebugLog($"{localMaps.Count} local maps found");
     }

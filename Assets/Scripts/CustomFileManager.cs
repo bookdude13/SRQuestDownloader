@@ -7,6 +7,7 @@ using System.IO.Compression;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 
 public class CustomFileManager : MonoBehaviour
 {
@@ -15,7 +16,6 @@ public class CustomFileManager : MonoBehaviour
 
     private bool isMovingFiles = false;
     private string synthCustomContentDir = "/sdcard/SynthRidersUC/";
-    private Dictionary<string, MapZMetadata> localMaps = new Dictionary<string, MapZMetadata>();
 
     private readonly string MAP_EXTENSION = ".synth";
     private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };
@@ -29,17 +29,11 @@ public class CustomFileManager : MonoBehaviour
     }
 
     private async void Start() {
-        await ReloadLocalMaps();
+        await RefreshLocalDatabase(synthCustomContentDir);
         displayManager.EnableFetchingLatest();
     }
 
-    /// Loads all local maps from disk and updates the dictionary
-    private async Task ReloadLocalMaps() {
-        localMaps = await GetLocalMaps(synthCustomContentDir);
-        displayManager.DebugLog($"{localMaps.Count} local maps found");
-    }
-
-    /// Parses the map at the given path and adds it to the localMaps dict
+    /// Parses the map at the given path and adds it to the collection
     public async void AddLocalMap(string mapPath) {
         MapZMetadata metadata = await ParseLocalMap(mapPath);
         if (metadata == null) {
@@ -47,9 +41,7 @@ public class CustomFileManager : MonoBehaviour
             return;
         }
 
-        if (!localMaps.TryAdd(metadata.hash, metadata)) {
-            displayManager.DebugLog("Map already exists in dict. Hash: " + metadata.hash);
-        }
+        db.AddMap(metadata, displayManager);
     }
 
     /// Useful for debugging. Clear out all custom songs
@@ -65,7 +57,7 @@ public class CustomFileManager : MonoBehaviour
             displayManager.ErrorLog($"Failed to delete files: {e.Message}");
         }
 
-        await ReloadLocalMaps();
+        await RefreshLocalDatabase(synthCustomContentDir);
     }
 
     public void StartMoveDownloadedFiles()
@@ -288,15 +280,14 @@ public class CustomFileManager : MonoBehaviour
 
     /// Returns a new list with all maps in the source list that aren't contained in the user's custom song directory already
     public List<MapItem> FilterOutExistingMaps(List<MapItem> maps) {
-        displayManager.DebugLog($"{localMaps.Count} local maps found");
-        return maps.Where(mapItem => !localMaps.ContainsKey(mapItem.hash)).ToList();
+        displayManager.DebugLog($"{db.GetNumberOfMaps()} local maps found");
+        return maps.Where(mapItem => db.GetFromHash(mapItem.hash) == null).ToList();
     }
 
     /// Refreshes local database metadata. Parses all missing custom map files.
     /// This saves the updated database.
-    /// Returned dictionary is hash: object
-    private async Task<Dictionary<string, MapZMetadata>> GetLocalMaps(string synthCustomContentDir) {
-        var maps = new Dictionary<string, MapZMetadata>();
+    private async Task RefreshLocalDatabase(string synthCustomContentDir) {
+        var localHashes = new HashSet<string>();
 
         // Make sure local db state is up to date
         await db.Load();
@@ -305,11 +296,11 @@ public class CustomFileManager : MonoBehaviour
             var mapsDir = Path.Join(synthCustomContentDir, "CustomSongs");
             if (!Directory.Exists(mapsDir)) {
                 displayManager.ErrorLog("Custom maps directory doesn't exist!");
-                return new Dictionary<string, MapZMetadata>();
+                return;
             }
 
             var files = Directory.GetFiles(mapsDir, $"*{MAP_EXTENSION}");
-            displayManager.DebugLog($"Updating database with map files...");
+            displayManager.DebugLog($"Updating database with map files ({files.Length} found)...");
             // This will implicitly remove any entries that are only present in the db
             int count = 0;
             int totalFiles = files.Length;
@@ -318,7 +309,7 @@ public class CustomFileManager : MonoBehaviour
                 if (dbMetadata != null) {
                     // DB has this version already - good to go
                     // displayManager.DebugLog(Path.GetFileName(filePath) + " already in db");
-                    maps.Add(dbMetadata.hash, dbMetadata);
+                    localHashes.Add(dbMetadata.hash);
                 }
                 else {
                     // DB doesn't have this version; parse and add
@@ -327,8 +318,9 @@ public class CustomFileManager : MonoBehaviour
                         displayManager.ErrorLog("Failed to parse map at " + filePath);
                         continue;
                     }
-                    maps.Add(metadata.hash, metadata);
-                    db.AddMap(metadata);
+
+                    localHashes.Add(metadata.hash);
+                    db.AddMap(metadata, displayManager);
                 }
 
                 count++;
@@ -343,16 +335,19 @@ public class CustomFileManager : MonoBehaviour
         }
         catch (System.Exception e) {
             displayManager.ErrorLog($"Failed to get local maps: {e.Message}");
-            return new Dictionary<string, MapZMetadata>();
+            return;
         }
 
-        // Successfully loaded maps. Save to db for next run
+        // Successfully loaded maps
+        // Remove all db entries that are no longer on the local file system
+        displayManager.DebugLog("Removing database entries that aren't on the local file system...");
+        db.RemoveMissingHashes(localHashes);
+        
+        // Save to db for next run
         if (!await db.Save()) {
             displayManager.ErrorLog("Failed to save db");
             // ignore for now; we still loaded everything fine
         }
-
-        return maps;
     }
 
     /// Parses local map file. Returns null if can't parse or no metadata
@@ -374,6 +369,10 @@ public class CustomFileManager : MonoBehaviour
                         }
                     }
                 }
+
+                // No return, so missing metadata file.
+                // Report this to be fixed on the Z site
+                displayManager.ErrorLog($"Missing synthriderz.meta.json in map {Path.GetFileName(filePath)}. If not a draft map, report to bookdude13");
             }
         }
         catch (System.Exception e) {

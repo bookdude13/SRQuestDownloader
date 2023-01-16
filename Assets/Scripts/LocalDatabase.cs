@@ -21,6 +21,10 @@ public class LocalDatabase {
     /// Faster lookup of maps by path
     private Dictionary<string, MapZMetadata> localMapPathLookup = new Dictionary<string, MapZMetadata>();
 
+    [JsonIgnore]
+    /// Faster lookup of maps by hash
+    private Dictionary<string, MapZMetadata> localMapHashLookup = new Dictionary<string, MapZMetadata>();
+
 
     public LocalDatabase(DisplayManager displayManager) {
         this.displayManager = displayManager;
@@ -36,17 +40,58 @@ public class LocalDatabase {
         return null;
     }
 
+    /// Gets locally stored metadata based on map hash.
+    /// Returns null if not found
+    public MapZMetadata GetFromHash(string hash) {
+        if (localMapHashLookup.ContainsKey(hash)) {
+            return localMapHashLookup[hash];
+        }
+
+        return null;
+    }
+
+    public int GetNumberOfMaps() {
+        return localMapMetadata.Count;
+    }
+
     /// Adds map metadata to database.
-    /// If the file path is already present, replace
-    public void AddMap(MapZMetadata mapMeta) {
+    /// If the file path is already present or hash is already present replace
+    public void AddMap(MapZMetadata mapMeta, ILogHandler logger) {
         // Remove existing to replace with new
         if (localMapPathLookup.ContainsKey(mapMeta.FilePath)) {
+            logger.DebugLog($"Removing map with existing path {mapMeta.FilePath}");
             localMapMetadata.Remove(localMapPathLookup[mapMeta.FilePath]);
             localMapPathLookup.Remove(mapMeta.FilePath);
         }
 
+        if (localMapHashLookup.ContainsKey(mapMeta.hash)) {
+            logger.DebugLog($"Removing map with matching hash {mapMeta.hash}");
+            localMapMetadata.Remove(localMapHashLookup[mapMeta.hash]);
+            localMapHashLookup.Remove(mapMeta.hash);
+        }
+
+        logger.DebugLog($"Adding map {Path.GetFileNameWithoutExtension(mapMeta.FilePath)}");
         localMapPathLookup.Add(mapMeta.FilePath, mapMeta);
+        localMapHashLookup.Add(mapMeta.hash, mapMeta);
         localMapMetadata.Add(mapMeta);
+    }
+
+    /// Remove maps that aren't in the list of hashes
+    public void RemoveMissingHashes(HashSet<string> savedHashes) {
+        var toRemove = new List<MapZMetadata>();
+        foreach (var mapMeta in localMapMetadata) {
+            if (!savedHashes.Contains(mapMeta.hash)) {
+                // Not saved; remove from db
+                toRemove.Add(mapMeta);
+            }
+        }
+
+        foreach (var mapMeta in toRemove) {
+            displayManager.DebugLog($"db map not found in filesystem; removing {Path.GetFileName(mapMeta.FilePath)}");
+            localMapMetadata.Remove(mapMeta);
+            localMapPathLookup.Remove(mapMeta.FilePath);
+            localMapHashLookup.Remove(mapMeta.hash);
+        }
     }
 
     /// Loads db state from file.
@@ -66,8 +111,10 @@ public class LocalDatabase {
 
         this.localMapMetadata = localDb.localMapMetadata;
         this.localMapPathLookup.Clear();
+        this.localMapHashLookup.Clear();
         foreach (var mapMeta in localMapMetadata) {
             localMapPathLookup.Add(mapMeta.FilePath, mapMeta);
+            localMapHashLookup.Add(mapMeta.hash, mapMeta);
         }
         displayManager.DebugLog("DB loaded");
     }

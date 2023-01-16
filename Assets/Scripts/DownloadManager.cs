@@ -1,238 +1,268 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using TMPro;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 public class DownloadManager : MonoBehaviour
 {
     public DisplayManager displayManager;
-    private bool isMovingFiles = false;
-    private readonly string MAP_EXTENSION = ".synth";
-    private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };
-    private readonly string PLAYLIST_EXTENSION = ".playlist";
+    public CustomFileManager customFileManager;
+    private bool isDownloading = false;
+    private readonly int GET_PAGE_TIMEOUT_SEC = 30;
+    private readonly int GET_MAP_TIMEOUT_SEC = 60;
 
-    public void StartMoveDownloadedFiles()
-    {
-        StartCoroutine(MoveDownloadedFiles());
-    }
-
-    /// Returns list of all zip files downloaded from synthriderz.com located in the given directory.
-    /// If none found or error occurs, returns empty array
-    private string[] GetSynthriderzZipFiles(string rootDirectory) {
-        try {
-            var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting zip files from {rootDirectory}. Directory exists? {directoryExists}");
-            if (directoryExists) {
-                return Directory.GetFiles(rootDirectory, "*synthriderz-beatmaps.zip");
-            }
-        } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+    public async void StartDownloadingLatest() {
+        if (isDownloading) {
+            displayManager.DebugLog("Already downloading!");
+            return;
         }
 
-        return new string[] {};
-    }
+        isDownloading = true;
 
-    /// Returns list of all maps downloaded from synthriderz.com located in the given directory.
-    /// If none found or error occurs, returns empty array
-    private string[] GetSynthriderzMapFiles(string rootDirectory) {
-        try {
-            var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting map files from {rootDirectory}. Directory exists? {directoryExists}");
-            if (directoryExists) {
-                return Directory.GetFiles(rootDirectory, $"*{MAP_EXTENSION}");
-            }
-        } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+        var now = DateTime.UtcNow;
+        var success = await DownloadSongsSinceTime(Preferences.GetLastDownloadedTime());
+        if (success) {
+            Preferences.SetLastDownloadedTime(now);
+            displayManager.UpdateLastFetchTime();
         }
 
-        return new string[] {};
+        isDownloading = false;
     }
 
-    /// Returns list of all stages downloaded from synthriderz.com located in the given directory.
-    /// If none found or error occurs, returns empty array
-    private string[] GetSynthriderzStageFiles(string rootDirectory) {
+    private int resetTick = 0;
+    public void ToggleLastFetchTime() {
+        if (resetTick == 0) {
+            // Set to epoch
+            Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
+        } else if (resetTick == 1) {
+            // Set to a month ago
+            Preferences.SetLastDownloadedTime(DateTime.Now.AddMonths(-1));
+        } else if (resetTick == 2) {
+            // Set to a day ago
+            Preferences.SetLastDownloadedTime(DateTime.Now.AddDays(-1));
+        } else if (resetTick == 3) {
+            // Set to a minute ago
+            Preferences.SetLastDownloadedTime(DateTime.Now.AddMinutes(-1));
+        }
+        
+        resetTick = (resetTick + 1) % 4;
+        displayManager.UpdateLastFetchTime();
+    }
+
+    private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime) {
+        displayManager.DebugLog($"Getting maps after time {sinceTime.ToLocalTime()}...");
+
+        var tempDir = Path.Join(Application.temporaryCachePath, "Download");
         try {
-            var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting stage files from {rootDirectory}. Directory exists? {directoryExists}");
-            if (directoryExists) {
-                var filePaths = new List<string>();
-                foreach (var stageExtension in STAGE_EXTENSIONS) {
-                    filePaths.AddRange(Directory.GetFiles(rootDirectory, $"*{stageExtension}"));
+            // Delete anything from previous runs
+            if (Directory.Exists(tempDir)) {
+                displayManager.DebugLog($"Clearing temp directory at {tempDir}");
+                Directory.Delete(tempDir, true);
+            }
+
+            // Recreate
+            displayManager.DebugLog($"(re)Creating temp directory at {tempDir}");
+            Directory.CreateDirectory(tempDir);
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog("Failed to delete or create temp dir: " + e.Message);
+            return false;
+        }
+        
+        try {
+            List<MapItem> mapsFromZ = await GetMapsSinceTime(sinceTime);
+            displayManager.DebugLog($"{mapsFromZ.Count} maps in Z found since given time.");
+
+            var mapsToDownload = customFileManager.FilterOutExistingMaps(mapsFromZ);
+            displayManager.DebugLog($"{mapsToDownload.Count} new files to download...");
+
+            int count = 1;
+            foreach (MapItem map in mapsToDownload) {
+                displayManager.DebugLog($"{count}/{mapsToDownload.Count}: {map.id} {map.title}");
+
+                await DownloadMap(map, tempDir);
+
+                count++;
+            }
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to download maps: {e.Message}");
+            return false;
+        }
+
+        return true;
+    }
+
+    /// Downloads the given MapItem to the destination directory
+    /// Returns true if successful, false if not
+    private async Task<bool> DownloadMap(MapItem map, string destDir) {
+        var fullUrl = "https://synthriderz.com" + map.download_url;
+        var destPath = Path.Join(destDir, map.filename);
+
+        try {
+            var getRequest = UnityWebRequest.Get(new Uri(fullUrl));
+            getRequest.timeout = GET_MAP_TIMEOUT_SEC;
+            var asyncOp = getRequest.SendWebRequest();
+            var startTime = DateTime.Now;
+            var timeoutTime = startTime.AddSeconds(GET_MAP_TIMEOUT_SEC);
+            while (!asyncOp.isDone) {
+                if (DateTime.Now > timeoutTime) {
+                    displayManager.ErrorLog("Timed out waiting for map download!");
+                    return false;
                 }
-                return filePaths.ToArray();
-            }
-        } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
-        }
-
-        return new string[] {};
-    }
-
-    /// Returns list of all playlists downloaded from synthriderz.com located in the given directory.
-    /// If none found or error occurs, returns empty array
-    private string[] GetSynthriderzPlaylistFiles(string rootDirectory) {
-        try {
-            var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting playlist files from {rootDirectory}. Directory exists? {directoryExists}");
-            if (directoryExists) {
-                var filePaths = new List<string>();
-                return Directory.GetFiles(rootDirectory, $"*{PLAYLIST_EXTENSION}");
-            }
-        } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
-        }
-
-        return new string[] {};
-    }
-
-    /// Extracts custom content from a Synthriderz zip file to their respective directories.
-    /// zipPath is the path to the zip file
-    /// synthDirectory is the path to the root Synth Riders directory for custom content (i.e. SynthRidersUC)
-    /// TODO add decals and profiles
-    private IEnumerator ExtractSynthriderzZip(string zipPath, string synthDirectory) {
-        if (!File.Exists(zipPath)) {
-            displayManager.ErrorLog($"File {zipPath} doesn't exist! Not extracting");
-            yield break;
-        }
-
-        if (!Directory.Exists(synthDirectory)) {
-            displayManager.ErrorLog($"Destination {synthDirectory} doesn't exist!");
-            yield break;
-        }
-
-        // Sanity check
-        if (!lzip.validateFile(zipPath)) {
-            displayManager.ErrorLog($"Failed to validate {zipPath}");
-            yield break;
-        }
-
-        // Get general info about the zip archive
-        var uncompressedBytes = lzip.getFileInfo(zipPath);
-        if (uncompressedBytes == 0) {
-            displayManager.ErrorLog("Failed to get info on zip file");
-            yield break;
-        }
-        else {
-            displayManager.DebugLog($"Total zip size: {uncompressedBytes}");
-        }
-
-        // Get zip entries
-        var entryNames = lzip.ninfo;
-
-        // Extract custom Synth Riderz content
-        foreach (var filePath in entryNames) {
-            var fileName = Path.GetFileName(filePath);
-            string destPath = null;
-            if (Path.GetExtension(filePath) == MAP_EXTENSION) {
-                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
-                destPath = Path.Join(synthDirectory, "CustomSongs", fileName);
-            }
-            else if (STAGE_EXTENSIONS.Contains(Path.GetExtension(filePath))) {
-                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
-                destPath = Path.Join(synthDirectory, "CustomStages", fileName);
-            }
-            else if (Path.GetExtension(filePath) == PLAYLIST_EXTENSION) {
-                // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
-                destPath = Path.Join(synthDirectory, "Playlist", fileName);
-            }
-
-            if (destPath != null) {
-                displayManager.DebugLog($"Extracting {filePath} to {destPath}");
-                yield return null;
-                int result = lzip.extract_entry(zipPath, filePath, destPath);
-                if (result != 1) {
-                    displayManager.ErrorLog($"Failed to extract {filePath}! Result: {result}. Skipping");
-                    continue;
+                else {
+                    await Task.Delay(50);
                 }
             }
+            if (!string.IsNullOrEmpty(asyncOp.webRequest.error)) {
+                displayManager.ErrorLog($"Error getting request ({asyncOp.webRequest.responseCode}): {asyncOp.webRequest.error}");
+                return false;
+            }
+
+            byte[] rawResponse = getRequest.downloadHandler.data;
+            if (rawResponse == null) {
+                displayManager.ErrorLog("Null response from server!");
+                return false;
+            }
+
+            displayManager.DebugLog("Saving to file...");
+            if (!FileUtils.WriteToFile(rawResponse, destPath, displayManager)) {
+                return false;
+            }
+
+            displayManager.DebugLog("Moving to SynthRiders directory...");
+            var finalPath = customFileManager.MoveCustomSong(destPath);
+
+            displayManager.DebugLog("Success!");
+            customFileManager.AddLocalMap(finalPath);
+
+            return true;
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to download map {map.id} ({map.title}): {e.Message}");
+        }
+
+        return false;
+    }
+
+    private async Task<MapPage> GetMapPage(int pageSize, int pageIndex, DateTimeOffset sinceTime) {
+        var apiEndpoint = "https://synthriderz.com/api/beatmaps";
+        var sort = "published_at,DESC";
+
+        JArray searchParameters = new JArray();
+
+        var publishedDateRange = new JObject(
+            new JProperty("published_at",
+                new JObject(
+                    new JProperty("$gt",
+                        new JValue(sinceTime.UtcDateTime)
+                    )
+                )
+            )
+        );
+
+        var beatSaberConvert = new JObject(
+            new JProperty("beat_saber_convert",
+                new JObject(
+                    new JProperty("$ne",
+                        new JValue(true)
+                    )
+                )
+            )
+        );
+
+        searchParameters.Add(publishedDateRange);
+        searchParameters.Add(beatSaberConvert);
+
+        var searchFilter = new JObject(
+            new JProperty("$and", searchParameters)
+        );
+
+        string request = $"{apiEndpoint}?sort={sort}&limit={pageSize}&page={pageIndex}&s={searchFilter.ToString(Formatting.None)}";
+        var requestUri = new Uri(request);
+        string rawPage = null;
+        try {
+            var getRequest = UnityWebRequest.Get(requestUri);
+            getRequest.timeout = GET_PAGE_TIMEOUT_SEC;
+            var asyncOp = getRequest.SendWebRequest();
+            var startTime = DateTime.Now;
+            var timeoutTime = startTime.AddSeconds(GET_PAGE_TIMEOUT_SEC);
+            while (!asyncOp.isDone) {
+                if (DateTime.Now > timeoutTime) {
+                    displayManager.ErrorLog("Timed out waiting for page!");
+                    return null;
+                }
+                else {
+                    await Task.Delay(10);
+                }
+            }
+            if (!string.IsNullOrEmpty(asyncOp.webRequest.error)) {
+                displayManager.ErrorLog("Error getting request: " + asyncOp.webRequest.error);
+                return null;
+            }
+            rawPage = getRequest.downloadHandler.text;
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to get web page: {e.Message}");
+            return null;
+        }
+
+        displayManager.DebugLog("Deserializing page...");
+        try {
+            MapPage page = JsonConvert.DeserializeObject<MapPage>(rawPage);
+            return page;
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to deserialize map page: {e.Message}");
+            return null;
         }
     }
 
-    /// Move synth custom content from the Downloads folder to custom content directories.
-    /// Extracts zip files that look like they were downloaded from synthriderz.com
-    private IEnumerator MoveDownloadedFiles() {
-        displayManager.DebugLog("Trying to move custom content from Download folder...");
+    private async Task<List<MapItem>> GetMapsSinceTime(DateTimeOffset sinceTime) {
+        var maps = new List<MapItem>();
 
-        if (isMovingFiles) {
-            displayManager.DebugLog("Already moving! Ignoring...");
-            yield break;
-        }
+        int numPages = 1;
+        int pageSize = 20;
+        int pageIndex = 1;
 
-        isMovingFiles = true;
-
-        // Fresh start each time
-        displayManager.ClearLogs();
-        
-        var downloadDir = "/sdcard/Download/";
-        var synthCustomContentDir = "/sdcard/SynthRidersUC/";
-        
-        displayManager.DebugLog($"Moving downloaded zips...");
-        var zipFilePaths = GetSynthriderzZipFiles(downloadDir);
-        displayManager.DebugLog($"{zipFilePaths.Length} zip files found");
-        foreach (var filePath in zipFilePaths) {
-            displayManager.DebugLog("Zip file: " + filePath);
-            yield return ExtractSynthriderzZip(filePath, synthCustomContentDir);
-            try {
-                File.Delete(filePath);
-            } catch (System.Exception e) {
-                displayManager.ErrorLog($"Failed to delete zip {filePath}: {e.Message}");
-                continue;
+        do
+        {
+            if (pageIndex == 1) {
+                displayManager.DebugLog("Requesting first page");
             }
-        }
-        
-        displayManager.DebugLog($"Moving downloaded map files...");
-        var mapFilePaths = GetSynthriderzMapFiles(downloadDir);
-        displayManager.DebugLog($"{mapFilePaths.Length} map files found");
-        foreach (var filePath in mapFilePaths) {
-            var destPath = Path.Join(synthCustomContentDir, "CustomSongs", Path.GetFileName(filePath));
-            displayManager.DebugLog($"Moving {filePath} to {destPath}");
-            yield return null;
-            try {
-                // Attempt to "move", overwriting destination if it exists.
-                File.Copy(filePath, destPath, true);
-                File.Delete(filePath);
-            } catch (System.Exception e) {
-                displayManager.ErrorLog($"Failed to move {filePath}! {e.Message}");
-                continue;
+            else {
+                displayManager.DebugLog($"Requesting page {pageIndex}/{numPages}");
             }
-        }
 
-        displayManager.DebugLog($"Moving downloaded stage files...");
-        var stageFilePaths = GetSynthriderzStageFiles(downloadDir);
-        displayManager.DebugLog($"{stageFilePaths.Length} stage files found");
-        foreach (var filePath in stageFilePaths) {
-            var destPath = Path.Join(synthCustomContentDir, "CustomStages", Path.GetFileName(filePath));
-            displayManager.DebugLog($"Moving {filePath} to {destPath}");
-            yield return null;
-            try {
-                // Attempt to "move", overwriting destination if it exists.
-                File.Copy(filePath, destPath, true);
-                File.Delete(filePath);
-            } catch (System.Exception e) {
-                displayManager.ErrorLog($"Failed to move {filePath}! {e.Message}");
-                continue;
+            MapPage page = await GetMapPage(pageSize, pageIndex, sinceTime);
+            if (page == null) {
+                displayManager.ErrorLog($"Returned null page {pageIndex}! Aborting.");
+                break;
             }
-        }
 
-        displayManager.DebugLog($"Moving downloaded playlist files...");
-        var playlistFilePaths = GetSynthriderzPlaylistFiles(downloadDir);
-        displayManager.DebugLog($"{playlistFilePaths.Length} playlist files found");
-        foreach (var filePath in playlistFilePaths) {
-            var destPath = Path.Join(synthCustomContentDir, "Playlist", Path.GetFileName(filePath));
-            displayManager.DebugLog($"Moving {filePath} to {destPath}");
-            yield return null;
-            try {
-                // Attempt to "move", overwriting destination if it exists.
-                // TODO actually check existing files for matching identifier, since the game can rename them!
-                File.Copy(filePath, destPath, true);
-                File.Delete(filePath);
-            } catch (System.Exception e) {
-                displayManager.ErrorLog($"Failed to move {filePath}! {e.Message}");
-                continue;
+            displayManager.DebugLog($"Page {pageIndex} retrieved");
+            
+            displayManager.DebugLog($"{page.data.Count} elements");
+            foreach (MapItem item in page.data)
+            {
+                // For now, don't care about existing files, just overwrite them
+                maps.Add(item);
             }
-        }
 
-        isMovingFiles = false;
+            // Set total page count from responses
+            numPages = page.pagecount;
+
+            pageIndex++;
+        }
+        while (pageIndex <= numPages);
+
+        return maps;
     }
 }

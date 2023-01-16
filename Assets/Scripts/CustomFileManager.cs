@@ -3,16 +3,64 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using TMPro;
+using System.IO.Compression;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Linq;
 
 public class CustomFileManager : MonoBehaviour
 {
     public DisplayManager displayManager;
+
     private bool isMovingFiles = false;
     private string synthCustomContentDir = "/sdcard/SynthRidersUC/";
+    private Dictionary<string, MapZMetadata> localMaps = new Dictionary<string, MapZMetadata>();
+
     private readonly string MAP_EXTENSION = ".synth";
     private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };
     private readonly string PLAYLIST_EXTENSION = ".playlist";
 
+
+    private async void Awake()
+    {
+        await ReloadLocalMaps();
+    }
+
+    /// Loads all local maps from disk and updates the dictionary
+    private async Task ReloadLocalMaps() {
+        // TODO if this takes too long, have a popup with progress bar?
+        localMaps = await GetLocalMaps(synthCustomContentDir);
+        displayManager.DebugLog($"{localMaps.Count} local maps found");
+    }
+
+    /// Parses the map at the given path and adds it to the localMaps dict
+    public async void AddLocalMap(string mapPath) {
+        MapZMetadata metadata = await ParseLocalMap(mapPath);
+        if (metadata == null) {
+            displayManager.ErrorLog("Failed to parse map at " + mapPath);
+            return;
+        }
+
+        if (!localMaps.TryAdd(metadata.hash, metadata)) {
+            displayManager.DebugLog("Map already exists in dict. Hash: " + metadata.hash);
+        }
+    }
+
+    /// Useful for debugging. Clear out all custom songs
+    public async void DeleteCustomSongs() {
+        try {
+            var mapFiles = GetSynthriderzMapFiles(Path.Join(synthCustomContentDir, "CustomSongs"));
+            displayManager.DebugLog($"Deleting {mapFiles.Length} files...");
+            foreach (var filePath in mapFiles) {
+                File.Delete(filePath);
+            }
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to delete files: {e.Message}");
+        }
+
+        await ReloadLocalMaps();
+    }
 
     public void StartMoveDownloadedFiles()
     {
@@ -207,22 +255,92 @@ public class CustomFileManager : MonoBehaviour
     }
 
     /// Moves a custom song to the proper synth directory
-    public void MoveCustomSong(string filePath) {
+    /// Returns the final path of the song
+    public string MoveCustomSong(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "CustomSongs", Path.GetFileName(filePath));
         FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        return destPath;
     }
 
     /// Moves a custom stage to the proper synth directory
-    public void MoveCustomStage(string filePath) {
+    /// Returns the final path of the stage
+    public string MoveCustomStage(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "CustomStages", Path.GetFileName(filePath));
         FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        return destPath;
     }
 
     /// Moves a custom playlist to the proper synth directory
+    /// Returns the final path of the playlist
     /// TODO this doesn't check and remove different named playlists with the same identifier!
-    public void MoveCustomPlaylist(string filePath) {
+    public string MoveCustomPlaylist(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "Playlist", Path.GetFileName(filePath));
         // TODO actually check existing files for matching identifier, since the game can rename them!
         FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        return destPath;
+    }
+
+    /// Returns a new list with all maps in the source list that aren't contained in the user's custom song directory already
+    public List<MapItem> FilterOutExistingMaps(List<MapItem> maps) {
+        displayManager.DebugLog($"{localMaps.Count} local maps found");
+        return maps.Where(mapItem => !localMaps.ContainsKey(mapItem.hash)).ToList();
+    }
+
+    /// Looks in the given directory and parses out all custom map files
+    /// Returned dictionary is hash: object
+    private async Task<Dictionary<string, MapZMetadata>> GetLocalMaps(string synthCustomContentDir) {
+        var maps = new Dictionary<string, MapZMetadata>();
+
+        try {
+            var mapsDir = Path.Join(synthCustomContentDir, "CustomSongs");
+            if (!Directory.Exists(mapsDir)) {
+                displayManager.ErrorLog("Custom maps directory doesn't exist!");
+                return new Dictionary<string, MapZMetadata>();
+            }
+
+            var files = Directory.EnumerateFiles(mapsDir, $"*{MAP_EXTENSION}");
+            foreach (var filePath in files) {
+                MapZMetadata metadata = await ParseLocalMap(filePath);
+                if (metadata == null) {
+                    displayManager.ErrorLog("Failed to parse map at " + filePath);
+                    continue;
+                }
+                maps.Add(metadata.hash, metadata);
+            }
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to get local maps: {e.Message}");
+            return new Dictionary<string, MapZMetadata>();
+        }
+
+        return maps;
+    }
+
+    /// Parses local map file. Returns null if can't parse or no metadata
+    private async Task<MapZMetadata> ParseLocalMap(string filePath) {
+        try {
+            using (Stream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (BufferedStream bufferedStream = new BufferedStream(stream))
+            using (ZipArchive archive = new ZipArchive(bufferedStream))
+            {
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    if (entry.FullName == "synthriderz.meta.json")
+                    {
+                        using (System.IO.StreamReader sr = new System.IO.StreamReader(entry.Open()))
+                        {
+                            MapZMetadata metadata = JsonConvert.DeserializeObject<MapZMetadata>(await sr.ReadToEndAsync());
+                            metadata.FilePath = filePath;
+                            return metadata;
+                        }
+                    }
+                }
+            }
+        }
+        catch (System.Exception e) {
+            displayManager.ErrorLog($"Failed to parse local map {filePath}: {e.Message}");
+        }
+
+        return null;
     }
 }

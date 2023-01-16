@@ -7,6 +7,7 @@ using Oculus.Platform;
 
 public class DisplayManager : MonoBehaviour
 {
+    public TextMeshProUGUI VersionText;
     public TextMeshProUGUI LastFetchText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
@@ -17,6 +18,9 @@ public class DisplayManager : MonoBehaviour
 
     private void Awake()
     {
+        VersionText.gameObject.SetActive(true);
+        VersionText.SetText($"Version: {UnityEngine.Application.version}");
+
         LastFetchText.gameObject.SetActive(true);
         UpdateLastFetchTime();
 

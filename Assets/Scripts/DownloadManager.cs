@@ -77,12 +77,15 @@ public class DownloadManager : MonoBehaviour
         }
         
         try {
-            var songsToDownload = await GetMapsSinceTime(sinceTime);
-            var totalDownloads = songsToDownload.Count;
-            displayManager.DebugLog($"{totalDownloads} files to download...");
+            List<MapItem> mapsFromZ = await GetMapsSinceTime(sinceTime);
+            displayManager.DebugLog($"{mapsFromZ.Count} maps in Z found since given time.");
+
+            var mapsToDownload = customFileManager.FilterOutExistingMaps(mapsFromZ);
+            displayManager.DebugLog($"{mapsToDownload.Count} new files to download...");
+
             int count = 1;
-            foreach (MapItem map in songsToDownload) {
-                displayManager.DebugLog($"{count}/{totalDownloads}: {map.id} {map.title}");
+            foreach (MapItem map in mapsToDownload) {
+                displayManager.DebugLog($"{count}/{mapsToDownload.Count}: {map.id} {map.title}");
 
                 await DownloadMap(map, tempDir);
 
@@ -90,7 +93,7 @@ public class DownloadManager : MonoBehaviour
             }
         }
         catch (System.Exception e) {
-            displayManager.ErrorLog($"Failed to download songs: {e.Message}");
+            displayManager.ErrorLog($"Failed to download maps: {e.Message}");
             return false;
         }
 
@@ -135,9 +138,10 @@ public class DownloadManager : MonoBehaviour
             }
 
             displayManager.DebugLog("Moving to SynthRiders directory...");
-            customFileManager.MoveCustomSong(destPath);
+            var finalPath = customFileManager.MoveCustomSong(destPath);
 
             displayManager.DebugLog("Success!");
+            customFileManager.AddLocalMap(finalPath);
 
             return true;
         }

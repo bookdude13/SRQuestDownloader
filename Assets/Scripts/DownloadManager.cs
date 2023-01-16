@@ -25,6 +25,7 @@ public class DownloadManager : MonoBehaviour
         }
 
         isDownloading = true;
+        displayManager.DisableFetchingLatest();
 
         var now = DateTime.UtcNow;
         var success = await DownloadSongsSinceTime(Preferences.GetLastDownloadedTime());
@@ -34,6 +35,7 @@ public class DownloadManager : MonoBehaviour
         }
 
         isDownloading = false;
+        displayManager.EnableFetchingLatest();
     }
 
     private int resetTick = 0;
@@ -133,7 +135,7 @@ public class DownloadManager : MonoBehaviour
             }
 
             displayManager.DebugLog("Saving to file...");
-            if (!FileUtils.WriteToFile(rawResponse, destPath, displayManager)) {
+            if (false == await FileUtils.WriteToFile(rawResponse, destPath, displayManager)) {
                 return false;
             }
 
@@ -229,7 +231,7 @@ public class DownloadManager : MonoBehaviour
         var maps = new List<MapItem>();
 
         int numPages = 1;
-        int pageSize = 20;
+        int pageSize = 50;
         int pageIndex = 1;
 
         do

@@ -1,25 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using System;
-using Oculus.Platform;
+using System.IO;
 
-public class DisplayManager : MonoBehaviour
+public class DisplayManager : MonoBehaviour, ILogHandler
 {
     public TextMeshProUGUI VersionText;
     public TextMeshProUGUI LastFetchText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
+    public Button FetchLatestButton;
+    public TextMeshProUGUI FetchLatestButtonText;
 
     private List<string> debugBuffer = new List<string>();
     private List<string> errorBuffer = new List<string>();
+    private ConcurrentQueue<string> persistBuffer = new ConcurrentQueue<string>();
+    private readonly DateTime startTime = DateTime.Now;
+    private readonly DebugAppLogger alternateErrorHandler = new DebugAppLogger();
 
 
     private void Awake()
     {
+        string version = UnityEngine.Application.version;
         VersionText.gameObject.SetActive(true);
-        VersionText.SetText($"Version: {UnityEngine.Application.version}");
+        VersionText.SetText($"Version: {version}");
+
+        PersistLog($"Starting up at {startTime}, version {version}");
 
         LastFetchText.gameObject.SetActive(true);
         UpdateLastFetchTime();
@@ -28,9 +38,26 @@ public class DisplayManager : MonoBehaviour
         ErrorText.gameObject.SetActive(true);
     }
 
+    private void Start() {
+        CleanOldLogs();
+        InvokeRepeating("AppendLogFile", 1f, 10f);
+    }
+
     public void UpdateLastFetchTime() {
         DateTime lastFetchTime = Preferences.GetLastDownloadedTime().ToLocalTime();
         LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
+    }
+
+    public void DisableFetchingLatest() {
+        FetchLatestButton.interactable = false;
+        FetchLatestButtonText.fontStyle = FontStyles.Italic;
+        FetchLatestButtonText.SetText("Loading Local Maps...");
+    }
+
+    public void EnableFetchingLatest() {
+        FetchLatestButtonText.fontStyle = FontStyles.Normal;
+        FetchLatestButtonText.SetText("Fetch Latest Songs");
+        FetchLatestButton.interactable = true;
     }
 
     public void ClearDebugLogs() {
@@ -49,6 +76,9 @@ public class DisplayManager : MonoBehaviour
         }
         debugBuffer.Add(message);
         DebugText.SetText(String.Join("\n", debugBuffer));
+
+        // Also send to text file for easier debugging
+        PersistLog(message);
     }
 
     public void ErrorLog(string message) {
@@ -60,5 +90,69 @@ public class DisplayManager : MonoBehaviour
 
         // Also set in debug log for clarity
         DebugLog(message);
+    }
+
+    /// Cleans up old log files
+    private void CleanOldLogs() {
+        // Keep logs for 7 days
+        var expirationTime = DateTime.UtcNow.AddDays(-7);
+
+        try {
+            var logsDir = Directory.GetParent(GetLogFilePath());
+            if (logsDir.Exists) {
+                var logFiles = logsDir.GetFiles();
+                foreach (var logFile in logFiles) {
+                    if (logFile.LastWriteTimeUtc < expirationTime) {
+                        DebugLog($"Removing old log file {logFile.Name}");
+                        logFile.Delete();
+                    }
+                }
+            }
+        }
+        catch (System.Exception e) {
+            ErrorLog("Failed to delete old log files: " + e.Message);
+        }
+    }
+
+    /// Save log message to persistent buffer
+    private void PersistLog(string message) {
+        persistBuffer.Enqueue(message);
+    }
+
+    /// Appends the current log buffer to the log file
+    private async void AppendLogFile() {
+        // If no updates, skip persist
+        if (persistBuffer.Count < 1) {
+            return;
+        }
+
+        string logFile = GetLogFilePath();
+        if (!File.Exists(logFile)) {
+            try {
+                Directory.GetParent(logFile).Create();
+                File.Create(logFile);
+            }
+            catch (Exception e) {
+                alternateErrorHandler.ErrorLog("Failed to create log file: " + e.Message);
+                return;
+            }
+        }
+
+        string message;
+        while (true) {
+            if (persistBuffer.TryDequeue(out message)) {
+                await FileUtils.AppendToFile(message + "\n", logFile, alternateErrorHandler);
+            }
+            else {
+                break;
+            }
+        }
+    }
+
+    /// Gets path to log file.
+    /// Consistent within the same launch, changes betwen launches.
+    private string GetLogFilePath() {
+        string logFileName = $"SRQuestDownloader-{startTime:yyyy_MMM_dd__H_mm_ss}.log";
+        return Path.Join(UnityEngine.Application.persistentDataPath, "logs", logFileName);
     }
 }

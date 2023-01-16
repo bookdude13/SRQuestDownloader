@@ -231,7 +231,7 @@ public class DownloadManager : MonoBehaviour
         var maps = new List<MapItem>();
 
         int numPages = 1;
-        int pageSize = 25;
+        int pageSize = 50;
         int pageIndex = 1;
 
         do

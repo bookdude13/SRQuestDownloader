@@ -22,10 +22,13 @@ public class CustomFileManager : MonoBehaviour
     private readonly string PLAYLIST_EXTENSION = ".playlist";
 
 
-    private async void Awake()
+    private void Awake()
     {
         displayManager.DisableFetchingLatest();
-        db = new LocalDatabase(displayManager);
+        db = new LocalDatabase(displayManager);        
+    }
+
+    private async void Start() {
         await ReloadLocalMaps();
         displayManager.EnableFetchingLatest();
     }
@@ -315,7 +318,7 @@ public class CustomFileManager : MonoBehaviour
                 MapZMetadata dbMetadata = db.GetFromPath(filePath);
                 if (dbMetadata != null) {
                     // DB has this version already - good to go
-                    displayManager.DebugLog(Path.GetFileName(filePath) + " already in db");
+                    // displayManager.DebugLog(Path.GetFileName(filePath) + " already in db");
                     maps.Add(dbMetadata.hash, dbMetadata);
                 }
                 else {
@@ -330,7 +333,7 @@ public class CustomFileManager : MonoBehaviour
                 }
 
                 count++;
-                if (count % 25 == 0) {
+                if (count % 100 == 0) {
                     displayManager.DebugLog($"Processed {count}/{totalFiles}...");
                     
                     // Save partial progress; ignore errors

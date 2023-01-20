@@ -14,6 +14,7 @@ public class DownloadManager : MonoBehaviour
 {
     public DisplayManager displayManager;
     public CustomFileManager customFileManager;
+    public DownloadFilters downloadFilters;
     private bool isDownloading = false;
     private readonly int GET_PAGE_TIMEOUT_SEC = 30;
     private readonly int GET_MAP_TIMEOUT_SEC = 60;

@@ -24,13 +24,13 @@ public class CustomFileManager : MonoBehaviour
 
     private void Awake()
     {
-        displayManager.DisableFetchingLatest();
+        displayManager.DisableFetching("Loading Local Maps...");
         db = new LocalDatabase(displayManager);        
     }
 
     private async void Start() {
         await RefreshLocalDatabase(synthCustomContentDir);
-        displayManager.EnableFetchingLatest();
+        displayManager.EnableFetching();
     }
 
     /// Parses the map at the given path and adds it to the collection

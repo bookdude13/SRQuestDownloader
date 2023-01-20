@@ -19,46 +19,50 @@ public class DownloadManager : MonoBehaviour
     private readonly int GET_PAGE_TIMEOUT_SEC = 30;
     private readonly int GET_MAP_TIMEOUT_SEC = 60;
 
-    public async void StartDownloadingLatest() {
+    public async void StartDownloading() {
         if (isDownloading) {
             displayManager.DebugLog("Already downloading!");
             return;
         }
 
         isDownloading = true;
-        displayManager.DisableFetchingLatest();
+        displayManager.DisableFetching("Downloading...");
 
-        var now = DateTime.UtcNow;
-        var success = await DownloadSongsSinceTime(Preferences.GetLastDownloadedTime());
+        var nowUtc = DateTime.UtcNow;
+        var cutoffTimeUtc = downloadFilters.GetDateCutoffFromCurrentSelection(nowUtc);
+        var difficultySelections = downloadFilters.GetDifficultiesEnabled();
+        displayManager.DebugLog($"Using cutoff time (local) {cutoffTimeUtc.ToLocalTime()}");
+        displayManager.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
+        var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
         if (success) {
-            Preferences.SetLastDownloadedTime(now);
+            Preferences.SetLastDownloadedTime(nowUtc);
             displayManager.UpdateLastFetchTime();
         }
 
         isDownloading = false;
-        displayManager.EnableFetchingLatest();
+        displayManager.EnableFetching();
     }
 
-    /// Debug method for cycling through different fetch times
-    private int resetTick = 0;
-    public void ToggleLastFetchTime() {
-        if (resetTick == 0) {
-            // Set to epoch
-            Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
-        } else if (resetTick == 1) {
-            // Set to a month ago
-            Preferences.SetLastDownloadedTime(DateTime.Now.AddMonths(-1));
-        } else if (resetTick == 2) {
-            // Set to a day ago
-            Preferences.SetLastDownloadedTime(DateTime.Now.AddDays(-1));
-        } else if (resetTick == 3) {
-            // Set to a minute ago
-            Preferences.SetLastDownloadedTime(DateTime.Now.AddMinutes(-1));
-        }
+    // /// Debug method for cycling through different fetch times
+    // private int resetTick = 0;
+    // public void ToggleLastFetchTime() {
+    //     if (resetTick == 0) {
+    //         // Set to epoch
+    //         Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
+    //     } else if (resetTick == 1) {
+    //         // Set to a month ago
+    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddMonths(-1));
+    //     } else if (resetTick == 2) {
+    //         // Set to a day ago
+    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddDays(-1));
+    //     } else if (resetTick == 3) {
+    //         // Set to a minute ago
+    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddMinutes(-1));
+    //     }
         
-        resetTick = (resetTick + 1) % 4;
-        displayManager.UpdateLastFetchTime();
-    }
+    //     resetTick = (resetTick + 1) % 4;
+    //     displayManager.UpdateLastFetchTime();
+    // }
 
     /// Reset fetch time to epoch, so all can be downloaded again if necessary
     public void ResetFetchTime() {
@@ -66,7 +70,7 @@ public class DownloadManager : MonoBehaviour
         displayManager.UpdateLastFetchTime();
     }
 
-    private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime) {
+    private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime, List<string> selectedDifficulties) {
         displayManager.DebugLog($"Getting maps after time {sinceTime.ToLocalTime()}...");
 
         var tempDir = Path.Join(Application.temporaryCachePath, "Download");
@@ -87,8 +91,8 @@ public class DownloadManager : MonoBehaviour
         }
         
         try {
-            List<MapItem> mapsFromZ = await GetMapsSinceTime(sinceTime);
-            displayManager.DebugLog($"{mapsFromZ.Count} maps in Z found since given time.");
+            List<MapItem> mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+            displayManager.DebugLog($"{mapsFromZ.Count} maps in Z found since given time for given difficulties.");
 
             var mapsToDownload = customFileManager.FilterOutExistingMaps(mapsFromZ);
             displayManager.DebugLog($"{mapsToDownload.Count} new files to download...");
@@ -162,7 +166,7 @@ public class DownloadManager : MonoBehaviour
         return false;
     }
 
-    private async Task<MapPage> GetMapPage(int pageSize, int pageIndex, DateTimeOffset sinceTime) {
+    private async Task<MapPage> GetMapPage(int pageSize, int pageIndex, DateTimeOffset sinceTime, List<string> includedDifficulties) {
         var apiEndpoint = "https://synthriderz.com/api/beatmaps";
         var sort = "published_at,DESC";
 
@@ -188,8 +192,19 @@ public class DownloadManager : MonoBehaviour
             )
         );
 
+        var difficultyFilter = new JObject(
+            new JProperty("difficulties",
+                new JObject(
+                    new JProperty("$jsonContainsAny",
+                        new JArray(includedDifficulties)
+                    )
+                )
+            )
+        );
+
         searchParameters.Add(publishedDateRange);
         searchParameters.Add(beatSaberConvert);
+        searchParameters.Add(difficultyFilter);
 
         var searchFilter = new JObject(
             new JProperty("$and", searchParameters)
@@ -235,7 +250,7 @@ public class DownloadManager : MonoBehaviour
         }
     }
 
-    private async Task<List<MapItem>> GetMapsSinceTime(DateTimeOffset sinceTime) {
+    private async Task<List<MapItem>> GetMapsSinceTimeForDifficulties(DateTimeOffset sinceTime, List<string> selectedDifficulties) {
         var maps = new List<MapItem>();
 
         int numPages = 1;
@@ -251,7 +266,7 @@ public class DownloadManager : MonoBehaviour
                 displayManager.DebugLog($"Requesting page {pageIndex}/{numPages}");
             }
 
-            MapPage page = await GetMapPage(pageSize, pageIndex, sinceTime);
+            MapPage page = await GetMapPage(pageSize, pageIndex, sinceTime, selectedDifficulties);
             if (page == null) {
                 displayManager.ErrorLog($"Returned null page {pageIndex}! Aborting.");
                 break;

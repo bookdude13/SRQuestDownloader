@@ -2,11 +2,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 
 /// Handles selecting download filters
 public class DownloadFilters : MonoBehaviour {
     public TextMeshProUGUI TimeSelectionText;
     public DisplayManager displayManager;
+    
+    public DownloadFilterDifficulty[] difficultyFilters;
     
     private const string TIME_LAST_FETCH = "Last Fetch";
     private const string TIME_LAST_WEEK = "Last Week";
@@ -65,5 +69,14 @@ public class DownloadFilters : MonoBehaviour {
                 break;
         }
         return cutoffTimeUtc;
+    }
+
+    /// Gets difficulty filter names for Z site.
+    /// Easy, Normal, Hard, Expert, Master, Custom
+    public List<string> GetDifficultiesEnabled() {
+        return difficultyFilters
+            .Where(filter => filter.IsSelected)
+            .Select(filter => filter.SiteFilterName)
+            .ToList();
     }
 }

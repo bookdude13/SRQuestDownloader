@@ -71,4 +71,9 @@ public class DownloadFilters : MonoBehaviour {
             .Select(filter => filter.SiteFilterName)
             .ToList();
     }
+
+    /// Gets all difficult filter names
+    public List<string> GetAllDifficulties() {
+        return difficultyFilters.Select(filter => filter.SiteFilterName).ToList();
+    }
 }

@@ -43,8 +43,48 @@ public class DownloadManager : MonoBehaviour
             displayManager.ErrorLog("Failed to download: " + e.Message);
         }
 
+        displayManager.DebugLog("Finished downloading");
+
         isDownloading = false;
         displayManager.EnableFetching();
+    }
+
+    /// Update local map timestamps to match the Z site published_at,
+    /// to allow for correct sorting by timestamp in-game
+    public async void FixMapTimestamps() {
+        displayManager.DebugLog("Fixing map timestamp...");
+
+        try {
+            var sinceTime = DateTime.UnixEpoch;
+            var selectedDifficulties = downloadFilters.GetAllDifficulties();
+
+            displayManager.DebugLog("Getting all maps from Z");
+            List<MapItem> mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+
+            displayManager.DebugLog("Fixing local files...");
+            var notFoundLocally = 0;
+            foreach (var mapFromZ in mapsFromZ) {
+                MapZMetadata localMetadata = customFileManager.db.GetFromHash(mapFromZ.hash);
+                if (localMetadata == null) {
+                    notFoundLocally++;
+                    // displayManager.DebugLog($"Map id {mapFromZ.id} not found locally, skipping");
+                } else {
+                    var fileName = Path.GetFileName(localMetadata.FilePath);
+                    var publishedAtUtc = mapFromZ.GetPublishedAtUtc();
+                    if (publishedAtUtc == null) {
+                        displayManager.DebugLog($"Couldn't parse published_at timestamp {mapFromZ.published_at}");
+                    } else {
+                        displayManager.DebugLog($"Setting timestamp for {fileName} to {publishedAtUtc}");
+                        FileUtils.SetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), displayManager);
+                    }
+                }
+            }
+
+            displayManager.DebugLog($"{notFoundLocally} files from Z not found locally and skipped");
+            displayManager.DebugLog("Finished correcting timestamps");            
+        } catch (Exception e) {
+            displayManager.ErrorLog("Failed to fix timestamps: " + e.Message);
+        }
     }
 
     // /// Debug method for cycling through different fetch times
@@ -156,7 +196,7 @@ public class DownloadManager : MonoBehaviour
             }
 
             displayManager.DebugLog("Moving to SynthRiders directory...");
-            var finalPath = customFileManager.MoveCustomSong(destPath);
+            var finalPath = customFileManager.MoveCustomSong(destPath, map.GetPublishedAtUtc());
 
             displayManager.DebugLog("Success!");
             customFileManager.AddLocalMap(finalPath);

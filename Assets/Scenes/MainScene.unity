@@ -5622,8 +5622,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 332003137}
-        m_TargetAssemblyTypeName: CustomFileManager, Assembly-CSharp
+      - m_Target: {fileID: 332003139}
+        m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
         m_MethodName: FixMapTimestamps
         m_Mode: 1
         m_Arguments:

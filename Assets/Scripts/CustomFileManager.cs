@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using System;
 
 public class CustomFileManager : MonoBehaviour
 {
@@ -63,12 +64,6 @@ public class CustomFileManager : MonoBehaviour
     public void StartMoveDownloadedFiles()
     {
         StartCoroutine(MoveDownloadedFiles());
-    }
-
-    /// Update local map timestamps to match the Z site published_at,
-    /// to allow for correct sorting by timestamp in-game
-    public void FixMapTimestamps() {
-        displayManager.DebugLog("Fixing map timestamp...");
     }
 
     /// Returns list of all zip files downloaded from synthriderz.com located in the given directory.
@@ -259,10 +254,18 @@ public class CustomFileManager : MonoBehaviour
     }
 
     /// Moves a custom song to the proper synth directory
+    /// Sets dateModified to the published date (if provided), for in-game time ordering.
     /// Returns the final path of the song
-    public string MoveCustomSong(string filePath) {
-        var destPath = Path.Join(synthCustomContentDir, "CustomSongs", Path.GetFileName(filePath));
+    public string MoveCustomSong(string filePath, DateTime? publishedAtUtc=null) {
+        var mapFileName = Path.GetFileName(filePath);
+        var destPath = Path.Join(synthCustomContentDir, "CustomSongs", mapFileName);
         FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+
+        if (publishedAtUtc.HasValue) {
+            displayManager.DebugLog($"Setting {mapFileName} file time to {publishedAtUtc.GetValueOrDefault()}");
+            FileUtils.SetDateModifiedUtc(destPath, publishedAtUtc.GetValueOrDefault(), displayManager);
+        }
+
         return destPath;
     }
 
@@ -301,8 +304,8 @@ public class CustomFileManager : MonoBehaviour
         try {
             var mapsDir = Path.Join(synthCustomContentDir, "CustomSongs");
             if (!Directory.Exists(mapsDir)) {
-                displayManager.ErrorLog("Custom maps directory doesn't exist!");
-                return;
+                displayManager.ErrorLog("Custom maps directory doesn't exist! Creating...");
+                Directory.CreateDirectory(mapsDir);
             }
 
             var files = Directory.GetFiles(mapsDir, $"*{MAP_EXTENSION}");

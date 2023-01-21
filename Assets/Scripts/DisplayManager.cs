@@ -13,8 +13,10 @@ public class DisplayManager : MonoBehaviour, ILogHandler
     public TextMeshProUGUI LastFetchText;
     public TextMeshProUGUI DebugText;
     public TextMeshProUGUI ErrorText;
-    public Button FetchLatestButton;
-    public TextMeshProUGUI FetchLatestButtonText;
+    public Button FetchMapsButton;
+    public TextMeshProUGUI FetchMapsButtonText;
+    public Button FixTimestampsButton;
+    public Button MoveDownloadsButton;
 
     private List<string> debugBuffer = new List<string>();
     private List<string> errorBuffer = new List<string>();
@@ -48,16 +50,22 @@ public class DisplayManager : MonoBehaviour, ILogHandler
         LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
     }
 
-    public void DisableFetchingLatest() {
-        FetchLatestButton.interactable = false;
-        FetchLatestButtonText.fontStyle = FontStyles.Italic;
-        FetchLatestButtonText.SetText("Loading Local Maps...");
+    public void DisableActions(string fetchMapsText="Fetch Songs") {
+        FixTimestampsButton.interactable = false;
+        MoveDownloadsButton.interactable = false;
+
+        FetchMapsButton.interactable = false;
+        FetchMapsButtonText.fontStyle = FontStyles.Italic;
+        FetchMapsButtonText.SetText(fetchMapsText);
     }
 
-    public void EnableFetchingLatest() {
-        FetchLatestButtonText.fontStyle = FontStyles.Normal;
-        FetchLatestButtonText.SetText("Fetch Latest Songs");
-        FetchLatestButton.interactable = true;
+    public void EnableActions() {
+        FixTimestampsButton.interactable = true;
+        MoveDownloadsButton.interactable = true;
+
+        FetchMapsButton.interactable = true;
+        FetchMapsButtonText.SetText("Fetch Songs");
+        FetchMapsButton.interactable = true;
     }
 
     public void ClearDebugLogs() {

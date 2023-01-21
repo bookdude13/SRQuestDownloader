@@ -74,4 +74,21 @@ public static class FileUtils {
 
         return default(T);
     }
+
+
+    /// Sets file times to the given dateModified time, assuming UTC time.
+    /// Return true if updated, false if error
+    public static bool SetDateModifiedUtc(string filePath, DateTime dateModifiedUtc, ILogHandler logger) {
+        try {
+            // Might as well set all of them
+            File.SetLastWriteTimeUtc(filePath, dateModifiedUtc);
+            File.SetLastAccessTimeUtc(filePath, dateModifiedUtc);
+            File.SetCreationTimeUtc(filePath, dateModifiedUtc);
+
+            return true;
+        } catch (Exception e) {
+            logger.ErrorLog($"Failed to set file dates for {Path.GetFileName(filePath)}: {e.Message}");
+            return false;
+        }
+    }
 }

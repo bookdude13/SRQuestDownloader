@@ -42,33 +42,25 @@ public class DownloadFilters : MonoBehaviour {
 
         currentTimeSelectionIdx = (currentTimeSelectionIdx + 1) % TimeSelectionTextOptions.Length;
         TimeSelectionText.SetText(TimeSelectionTextOptions[currentTimeSelectionIdx]);
-        displayManager.DebugLog("Setting download time to " + GetDateCutoffFromCurrentSelection(DateTime.UtcNow));
+        displayManager.DebugLog("Setting download time to " + GetDateCutoffFromCurrentSelection(DateTime.UtcNow).ToLocalTime());
     }
 
     public DateTime GetDateCutoffFromCurrentSelection(DateTime nowUtc) {
-        DateTime cutoffTimeUtc = nowUtc;
         switch (TimeSelectionText.text) {
             case TIME_LAST_FETCH:
-                cutoffTimeUtc = Preferences.GetLastDownloadedTime();
-                break;
+                return Preferences.GetLastDownloadedTime();
             case TIME_LAST_WEEK:
-                cutoffTimeUtc.AddDays(-7);
-                break;
+                return nowUtc.AddDays(-7);
             case TIME_LAST_MONTH:
-                cutoffTimeUtc.AddMonths(-1);
-                break;
+                return nowUtc.AddMonths(-1);
             case TIME_LAST_3_MONTHS:
-                cutoffTimeUtc.AddMonths(-3);
-                break;
+                return nowUtc.AddMonths(-3);
             case TIME_LAST_YEAR:
-                cutoffTimeUtc.AddYears(-1);
-                break;
+                return nowUtc.AddYears(-1);
             case TIME_ALL_TIME:
             default:
-                cutoffTimeUtc = DateTime.UnixEpoch;
-                break;
+                return DateTime.UnixEpoch;
         }
-        return cutoffTimeUtc;
     }
 
     /// Gets difficulty filter names for Z site.

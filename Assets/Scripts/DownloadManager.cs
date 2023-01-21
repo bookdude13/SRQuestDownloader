@@ -154,6 +154,10 @@ public class DownloadManager : MonoBehaviour
                 await downloadTasks.Dequeue();
             }
             displayManager.DebugLog("Done waiting");
+
+            displayManager.DebugLog("Trying to save database...");
+            await customFileManager.db.Save();
+            displayManager.DebugLog("Done");
         }
         catch (System.Exception e) {
             displayManager.ErrorLog($"Failed to download maps: {e.Message}");
@@ -204,7 +208,7 @@ public class DownloadManager : MonoBehaviour
             var finalPath = customFileManager.MoveCustomSong(destPath, map.GetPublishedAtUtc());
 
             displayManager.DebugLog("Success!");
-            customFileManager.AddLocalMap(finalPath);
+            customFileManager.AddLocalMap(finalPath, map);
 
             return true;
         }

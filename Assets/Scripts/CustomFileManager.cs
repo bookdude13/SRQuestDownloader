@@ -35,8 +35,8 @@ public class CustomFileManager : MonoBehaviour
     }
 
     /// Parses the map at the given path and adds it to the collection
-    public async void AddLocalMap(string mapPath) {
-        MapZMetadata metadata = await ParseLocalMap(mapPath);
+    public async void AddLocalMap(string mapPath, MapItem mapFromZ) {
+        MapZMetadata metadata = await ParseLocalMap(mapPath, mapFromZ);
         if (metadata == null) {
             displayManager.ErrorLog("Failed to parse map at " + mapPath);
             return;
@@ -368,15 +368,16 @@ public class CustomFileManager : MonoBehaviour
     }
 
     /// Parses local map file. Returns null if can't parse or no metadata
-    private async Task<MapZMetadata> ParseLocalMap(string filePath) {
+    private async Task<MapZMetadata> ParseLocalMap(string filePath, MapItem mapFromZ = null) {
+        var metadataFileName = "synthriderz.meta.json";
         try {
-            using (Stream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (Stream stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
             using (BufferedStream bufferedStream = new BufferedStream(stream))
-            using (ZipArchive archive = new ZipArchive(bufferedStream))
+            using (ZipArchive archive = new ZipArchive(bufferedStream, ZipArchiveMode.Update))
             {
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
-                    if (entry.FullName == "synthriderz.meta.json")
+                    if (entry.FullName == metadataFileName)
                     {
                         using (System.IO.StreamReader sr = new System.IO.StreamReader(entry.Open()))
                         {
@@ -388,8 +389,28 @@ public class CustomFileManager : MonoBehaviour
                 }
 
                 // No return, so missing metadata file.
-                // Report this to be fixed on the Z site
-                displayManager.ErrorLog($"Missing synthriderz.meta.json in map {Path.GetFileName(filePath)}. If not a draft map, report to bookdude13");
+                var fileName = Path.GetFileName(filePath);
+                displayManager.DebugLog($"Missing {metadataFileName} in map {fileName}");
+                if (mapFromZ == null || mapFromZ.hash == null || mapFromZ.id <= 0) {
+                    displayManager.ErrorLog($"Missing {metadataFileName}. Refetch from Z site.");
+                } else {
+                    // We have information from Z to add this in ourselves
+                    displayManager.ErrorLog($"Creating missing {metadataFileName} for {fileName}");
+                    try {
+                        JObject zMetadata = new JObject(
+                            new JProperty("id", mapFromZ.id),
+                            new JProperty("hash", mapFromZ.hash)
+                        );
+
+                        var newEntry = archive.CreateEntry(metadataFileName);
+                        using System.IO.StreamWriter streamWriter = new System.IO.StreamWriter(newEntry.Open());
+                        await streamWriter.WriteAsync(zMetadata.ToString(Formatting.None));
+
+                        return new MapZMetadata(mapFromZ.id, mapFromZ.hash, filePath);
+                    } catch (Exception e) {
+                        displayManager.ErrorLog("Failed to create missing metadata entry: " + e.Message);
+                    }
+                }
             }
         }
         catch (System.Exception e) {

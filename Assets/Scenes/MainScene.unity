@@ -3026,7 +3026,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 332003139}
         m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
-        m_MethodName: StartDownloadingLatest
+        m_MethodName: StartDownloading
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4829,12 +4829,12 @@ MonoBehaviour:
   TimeSelectionText: {fileID: 40598984}
   displayManager: {fileID: 332003134}
   difficultyFilters:
-  - {fileID: 0}
   - {fileID: 1409598250}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1679267652}
+  - {fileID: 1731186210}
+  - {fileID: 1613107733}
+  - {fileID: 246596743}
+  - {fileID: 1765915677}
 --- !u!224 &1446209639
 RectTransform:
   m_ObjectHideFlags: 0

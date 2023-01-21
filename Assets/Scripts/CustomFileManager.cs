@@ -68,7 +68,7 @@ public class CustomFileManager : MonoBehaviour
     /// Update local map timestamps to match the Z site published_at,
     /// to allow for correct sorting by timestamp in-game
     public void FixMapTimestamps() {
-
+        displayManager.DebugLog("Fixing map timestamp...");
     }
 
     /// Returns list of all zip files downloaded from synthriderz.com located in the given directory.

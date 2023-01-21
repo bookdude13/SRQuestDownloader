@@ -28,15 +28,19 @@ public class DownloadManager : MonoBehaviour
         isDownloading = true;
         displayManager.DisableFetching("Downloading...");
 
-        var nowUtc = DateTime.UtcNow;
-        var cutoffTimeUtc = downloadFilters.GetDateCutoffFromCurrentSelection(nowUtc);
-        var difficultySelections = downloadFilters.GetDifficultiesEnabled();
-        displayManager.DebugLog($"Using cutoff time (local) {cutoffTimeUtc.ToLocalTime()}");
-        displayManager.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
-        var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
-        if (success) {
-            Preferences.SetLastDownloadedTime(nowUtc);
-            displayManager.UpdateLastFetchTime();
+        try {
+            var nowUtc = DateTime.UtcNow;
+            var cutoffTimeUtc = downloadFilters.GetDateCutoffFromCurrentSelection(nowUtc);
+            displayManager.DebugLog($"Using cutoff time (local) {cutoffTimeUtc.ToLocalTime()}");
+            var difficultySelections = downloadFilters.GetDifficultiesEnabled();
+            displayManager.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
+            var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
+            if (success) {
+                Preferences.SetLastDownloadedTime(nowUtc);
+                displayManager.UpdateLastFetchTime();
+            }
+        } catch (Exception e) {
+            displayManager.ErrorLog("Failed to download: " + e.Message);
         }
 
         isDownloading = false;

@@ -1614,6 +1614,8 @@ MonoBehaviour:
   ErrorText: {fileID: 383296245}
   FetchMapsButton: {fileID: 809281757}
   FetchMapsButtonText: {fileID: 1977747177}
+  FixTimestampsButton: {fileID: 1657167283}
+  MoveDownloadsButton: {fileID: 1414726938}
 --- !u!4 &332003135
 Transform:
   m_ObjectHideFlags: 0

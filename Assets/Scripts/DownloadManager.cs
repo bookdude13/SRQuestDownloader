@@ -26,7 +26,7 @@ public class DownloadManager : MonoBehaviour
         }
 
         isDownloading = true;
-        displayManager.DisableFetching("Downloading...");
+        displayManager.DisableActions("Downloading...");
 
         try {
             var nowUtc = DateTime.UtcNow;
@@ -46,13 +46,15 @@ public class DownloadManager : MonoBehaviour
         displayManager.DebugLog("Finished downloading");
 
         isDownloading = false;
-        displayManager.EnableFetching();
+        displayManager.EnableActions();
     }
 
     /// Update local map timestamps to match the Z site published_at,
     /// to allow for correct sorting by timestamp in-game
     public async void FixMapTimestamps() {
         displayManager.DebugLog("Fixing map timestamp...");
+
+        displayManager.DisableActions();
 
         try {
             var sinceTime = DateTime.UnixEpoch;
@@ -85,6 +87,8 @@ public class DownloadManager : MonoBehaviour
         } catch (Exception e) {
             displayManager.ErrorLog("Failed to fix timestamps: " + e.Message);
         }
+
+        displayManager.EnableActions();
     }
 
     // /// Debug method for cycling through different fetch times

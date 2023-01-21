@@ -15,6 +15,8 @@ public class DisplayManager : MonoBehaviour, ILogHandler
     public TextMeshProUGUI ErrorText;
     public Button FetchMapsButton;
     public TextMeshProUGUI FetchMapsButtonText;
+    public Button FixTimestampsButton;
+    public Button MoveDownloadsButton;
 
     private List<string> debugBuffer = new List<string>();
     private List<string> errorBuffer = new List<string>();
@@ -48,14 +50,20 @@ public class DisplayManager : MonoBehaviour, ILogHandler
         LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
     }
 
-    public void DisableFetching(string disableText) {
+    public void DisableActions(string fetchMapsText="Fetch Songs") {
+        FixTimestampsButton.interactable = false;
+        MoveDownloadsButton.interactable = false;
+
         FetchMapsButton.interactable = false;
         FetchMapsButtonText.fontStyle = FontStyles.Italic;
-        FetchMapsButtonText.SetText(disableText);
+        FetchMapsButtonText.SetText(fetchMapsText);
     }
 
-    public void EnableFetching() {
-        FetchMapsButtonText.fontStyle = FontStyles.Normal;
+    public void EnableActions() {
+        FixTimestampsButton.interactable = true;
+        MoveDownloadsButton.interactable = true;
+
+        FetchMapsButton.interactable = true;
         FetchMapsButtonText.SetText("Fetch Songs");
         FetchMapsButton.interactable = true;
     }

@@ -25,13 +25,13 @@ public class CustomFileManager : MonoBehaviour
 
     private void Awake()
     {
-        displayManager.DisableFetching("Loading Local Maps...");
+        displayManager.DisableActions("Loading Local Maps...");
         db = new LocalDatabase(displayManager);        
     }
 
     private async void Start() {
         await RefreshLocalDatabase(synthCustomContentDir);
-        displayManager.EnableFetching();
+        displayManager.EnableActions();
     }
 
     /// Parses the map at the given path and adds it to the collection
@@ -210,6 +210,9 @@ public class CustomFileManager : MonoBehaviour
 
         isMovingFiles = true;
 
+        // Disable anything else while we do this
+        displayManager.DisableActions();
+
         var downloadDir = "/sdcard/Download/";
         
         displayManager.DebugLog($"Moving downloaded zips...");
@@ -249,6 +252,11 @@ public class CustomFileManager : MonoBehaviour
             MoveCustomPlaylist(filePath);
             yield return null;
         }
+
+        displayManager.DebugLog("Files moved. Timestamps aren't updated.");
+        displayManager.DebugLog("Consider fixing timestamps for downloaded content!");
+
+        displayManager.EnableActions();
 
         isMovingFiles = false;
     }

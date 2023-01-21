@@ -87,7 +87,7 @@ public static class FileUtils {
 
             return true;
         } catch (Exception e) {
-            logger.ErrorLog($"Failed to set file dates for {Path.GetFileName(filePath)}");
+            logger.ErrorLog($"Failed to set file dates for {Path.GetFileName(filePath)}: {e.Message}");
             return false;
         }
     }

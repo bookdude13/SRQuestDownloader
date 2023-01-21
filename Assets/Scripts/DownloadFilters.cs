@@ -28,6 +28,14 @@ public class DownloadFilters : MonoBehaviour {
     };
     private int currentTimeSelectionIdx = 0;
 
+    private void Awake() {
+        // Set selection from prefs
+        var enabledDifficulties = Preferences.GetDifficultiesEnabled();
+        foreach (var difficultyFilter in difficultyFilters) {
+            difficultyFilter.SetSelected(enabledDifficulties.Contains(difficultyFilter.SiteFilterName));
+        }
+    }
+
     private void Start() {
         // Cycle from the last index to get to the start like any other time
         currentTimeSelectionIdx = TimeSelectionTextOptions.Length - 1;
@@ -75,5 +83,9 @@ public class DownloadFilters : MonoBehaviour {
     /// Gets all difficult filter names
     public List<string> GetAllDifficulties() {
         return difficultyFilters.Select(filter => filter.SiteFilterName).ToList();
+    }
+
+    public void SaveDifficultyFiltersToPrefs() {
+        Preferences.SetDifficultiesEnabled(GetDifficultiesEnabled());
     }
 }

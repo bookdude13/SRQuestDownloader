@@ -1297,6 +1297,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 1003333793}
   SiteFilterName: Master
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!222 &246596744
 CanvasRenderer:
@@ -4596,6 +4597,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 232748594}
   SiteFilterName: Easy
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!1 &1414726936
 GameObject:
@@ -5503,6 +5505,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 82042874}
   SiteFilterName: Expert
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!222 &1613107734
 CanvasRenderer:
@@ -5981,6 +5984,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 888255825}
   SiteFilterName: Normal
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!222 &1679267653
 CanvasRenderer:
@@ -6311,6 +6315,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 1187464013}
   SiteFilterName: Hard
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!222 &1731186211
 CanvasRenderer:
@@ -6565,6 +6570,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Label: {fileID: 177211773}
   SiteFilterName: Custom
+  downloadFilters: {fileID: 1416211317}
   IsSelected: 1
 --- !u!222 &1765915678
 CanvasRenderer:

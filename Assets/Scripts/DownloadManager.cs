@@ -18,6 +18,7 @@ public class DownloadManager : MonoBehaviour
     private bool isDownloading = false;
     private readonly int GET_PAGE_TIMEOUT_SEC = 30;
     private readonly int GET_MAP_TIMEOUT_SEC = 60;
+    private readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
 
     public async void StartDownloading() {
         if (isDownloading) {
@@ -91,33 +92,6 @@ public class DownloadManager : MonoBehaviour
         displayManager.EnableActions();
     }
 
-    // /// Debug method for cycling through different fetch times
-    // private int resetTick = 0;
-    // public void ToggleLastFetchTime() {
-    //     if (resetTick == 0) {
-    //         // Set to epoch
-    //         Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
-    //     } else if (resetTick == 1) {
-    //         // Set to a month ago
-    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddMonths(-1));
-    //     } else if (resetTick == 2) {
-    //         // Set to a day ago
-    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddDays(-1));
-    //     } else if (resetTick == 3) {
-    //         // Set to a minute ago
-    //         Preferences.SetLastDownloadedTime(DateTime.Now.AddMinutes(-1));
-    //     }
-        
-    //     resetTick = (resetTick + 1) % 4;
-    //     displayManager.UpdateLastFetchTime();
-    // }
-
-    /// Reset fetch time to epoch, so all can be downloaded again if necessary
-    public void ResetFetchTime() {
-        Preferences.SetLastDownloadedTime(DateTimeOffset.FromUnixTimeSeconds(0).LocalDateTime);
-        displayManager.UpdateLastFetchTime();
-    }
-
     private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime, List<string> selectedDifficulties) {
         displayManager.DebugLog($"Getting maps after time {sinceTime.ToLocalTime()}...");
 
@@ -146,13 +120,40 @@ public class DownloadManager : MonoBehaviour
             displayManager.DebugLog($"{mapsToDownload.Count} new files to download...");
 
             int count = 1;
+            var downloadTasks = new Queue<Task<bool>>();
             foreach (MapItem map in mapsToDownload) {
                 displayManager.DebugLog($"{count}/{mapsToDownload.Count}: {map.id} {map.title}");
 
-                await DownloadMap(map, tempDir);
-
+                downloadTasks.Enqueue(DownloadMap(map, tempDir));
                 count++;
+
+                // Limit the number of simultaneous downloads
+                while (downloadTasks.Count > PARALLEL_DOWNLOAD_LIMIT) {
+                    displayManager.DebugLog($"More than {PARALLEL_DOWNLOAD_LIMIT} downloads queued, waiting...");
+                    // This is safe since we aren't adding any more to this while we wait
+                    await downloadTasks.Dequeue();
+                }
+
+                // Every so often for bulk downloads, save the database
+                if (count % 100 == 0) {
+                    displayManager.DebugLog("Stopping new queued downloads...");
+                    while (downloadTasks.Count > 0) {
+                        await downloadTasks.Dequeue();
+                    }
+
+                    displayManager.DebugLog("Saving current state to db...");
+                    await customFileManager.db.Save();
+
+                    displayManager.DebugLog("Resuming...");
+                }
             }
+
+            // Wait for last downloads
+            displayManager.DebugLog("Waiting for last downloads...");
+            while (downloadTasks.Count > 0) {
+                await downloadTasks.Dequeue();
+            }
+            displayManager.DebugLog("Done waiting");
         }
         catch (System.Exception e) {
             displayManager.ErrorLog($"Failed to download maps: {e.Message}");

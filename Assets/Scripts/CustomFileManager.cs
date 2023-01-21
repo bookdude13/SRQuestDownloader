@@ -270,7 +270,7 @@ public class CustomFileManager : MonoBehaviour
         FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
 
         if (publishedAtUtc.HasValue) {
-            displayManager.DebugLog($"Setting {mapFileName} file time to {publishedAtUtc.GetValueOrDefault()}");
+            // displayManager.DebugLog($"Setting {mapFileName} file time to {publishedAtUtc.GetValueOrDefault()}");
             FileUtils.SetDateModifiedUtc(destPath, publishedAtUtc.GetValueOrDefault(), displayManager);
         }
 

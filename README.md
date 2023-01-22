@@ -12,12 +12,18 @@ This is an Android application for the Quest / Quest 2 for downloading custom co
 7. On your Quest, go to the App Library (seleting all apps). In the upper right open the dropdown and change "All" to "Unknown Sources"
 8. Click on SRQuestDownloader to run
 
+Note: The first time this runs it will catalog locally stored custom songs. This can take 1-2 minutes if you have all custom songs downloaded already.
+
 # Features
 
-## Fetch Latest Songs
+## Fetch Songs
 ***NOTE: The first use of this button will take a while!*** It will be sped up tremendously if you already have custom songs on your device. You can use [NoodleManagerX](https://github.com/tommaier123/NoodleManagerX) to efficiently download custom songs en-masse.
 
 This downloads all custom maps/songs from the synthriderz.com site, published after the last time this button was pushed, that aren't present on your device. I'm not sure if this will pick up updated maps, but it should cover most use cases.
+
+It only grabs maps from the selected difficulties (the ones underlined/white). If no difficulties are selected, then the filter is ignored and all difficulties are grabbed.
+
+You can also change the time frame for your fetch. Note, doing a fetch for maps from  _any_ time point will update the Latest Fetch timestamp.
 
 ## Move From Downloads
 This copies custom maps, stages, and playlists from the Quest Download/ folder to the Synth Riders directories.
@@ -26,7 +32,10 @@ This copies custom maps, stages, and playlists from the Quest Download/ folder t
 2. Navigate to synthriderz.com
 3. Find maps, stages, and playlists you want and use the "Download" buttons for each of them. For downloading multiple songs/maps, use "Get All" or "Get Page" (this downloads a zip file).
 4. Run SRQuestDownloader and select "Move From Downloads" to move and/or extract all necessary files to the matching Synth Riders directories.
-5. Select "Play Synth Riders" to run Synth Riders
+
+## Fix Map Timestamps
+This fetches all map metadata from synthriderz.com and updates the data modified for any local map files to the Z published_at time. This fixes in-game sorting by timestamp.
+
 
 ## Play Synth Riders
 Closes this application and launches the Synth Riders application. I haven't tested what happens if Synth Riders isn't installed, but I doubt that'll be a common problem :P

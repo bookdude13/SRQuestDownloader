@@ -1298,6 +1298,7 @@ MonoBehaviour:
   Label: {fileID: 1003333793}
   SiteFilterName: Master
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!222 &246596744
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1614,6 +1615,7 @@ MonoBehaviour:
   ErrorText: {fileID: 383296245}
   FetchMapsButton: {fileID: 809281757}
   FetchMapsButtonText: {fileID: 1977747177}
+  DownloadFilters: {fileID: 1416211317}
   FixTimestampsButton: {fileID: 1657167283}
   MoveDownloadsButton: {fileID: 1414726938}
 --- !u!4 &332003135
@@ -4328,6 +4330,7 @@ MonoBehaviour:
   Label: {fileID: 232748594}
   SiteFilterName: Easy
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!1 &1414726936
 GameObject:
   m_ObjectHideFlags: 0
@@ -4488,7 +4491,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1416211313}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -4506,8 +4509,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.15442}
-  m_SizeDelta: {x: 0, y: -0.30885}
+  m_AnchoredPosition: {x: 0, y: -0.15441996}
+  m_SizeDelta: {x: 0, y: -0.3088498}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1416211315
 MonoBehaviour:
@@ -5234,6 +5237,7 @@ MonoBehaviour:
   Label: {fileID: 82042874}
   SiteFilterName: Expert
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!222 &1613107734
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5712,6 +5716,7 @@ MonoBehaviour:
   Label: {fileID: 888255825}
   SiteFilterName: Normal
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!222 &1679267653
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6042,6 +6047,7 @@ MonoBehaviour:
   Label: {fileID: 1187464013}
   SiteFilterName: Hard
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!222 &1731186211
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -6296,6 +6302,7 @@ MonoBehaviour:
   Label: {fileID: 177211773}
   SiteFilterName: Custom
   downloadFilters: {fileID: 1416211317}
+  displayManager: {fileID: 332003134}
 --- !u!222 &1765915678
 CanvasRenderer:
   m_ObjectHideFlags: 0

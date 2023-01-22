@@ -5,6 +5,7 @@ public class DownloadFilterDifficulty : MonoBehaviour {
     public TextMeshProUGUI Label;
     public string SiteFilterName;
     public DownloadFilters downloadFilters;
+    public DisplayManager displayManager;
     public bool IsSelected { get; private set; } = true;
     private Color ColorSelected = Color.white;
     private Color ColorUnselected = Color.gray;
@@ -17,7 +18,7 @@ public class DownloadFilterDifficulty : MonoBehaviour {
         IsSelected = isSelected;
 
         if (IsSelected) {
-            Label.fontStyle = FontStyles.Underline & FontStyles.Bold;
+            Label.fontStyle = FontStyles.Underline;
             Label.color = ColorSelected;
         }
         else {
@@ -26,5 +27,6 @@ public class DownloadFilterDifficulty : MonoBehaviour {
         }
 
         downloadFilters.SaveDifficultyFiltersToPrefs();
+        displayManager.UpdateFilterText();
     }
 }

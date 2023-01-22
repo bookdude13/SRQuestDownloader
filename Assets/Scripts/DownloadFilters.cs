@@ -74,10 +74,18 @@ public class DownloadFilters : MonoBehaviour {
     /// Gets difficulty filter names for Z site.
     /// Easy, Normal, Hard, Expert, Master, Custom
     public List<string> GetDifficultiesEnabled() {
-        return difficultyFilters
+        var enabledDifficulties = difficultyFilters
             .Where(filter => filter.IsSelected)
             .Select(filter => filter.SiteFilterName)
             .ToList();
+        
+        // No filters selected treated the same as all selected (not filtered)
+        if (enabledDifficulties.Count == 0) {
+            return GetAllDifficulties();
+        }
+        else {
+            return enabledDifficulties;
+        }
     }
 
     /// Gets all difficult filter names

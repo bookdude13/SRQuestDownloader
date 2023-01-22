@@ -27,7 +27,8 @@ public class Preferences {
     }
 
     public static HashSet<string> GetDifficultiesEnabled() {
-        var csvDifficulties = PlayerPrefs.GetString(KEY_SELECTED_DIFFICULTIES, "");
+        // Default to all difficulties
+        var csvDifficulties = PlayerPrefs.GetString(KEY_SELECTED_DIFFICULTIES, "Easy,Normal,Hard,Expert,Master,Custom");
         return csvDifficulties.Split(",", StringSplitOptions.RemoveEmptyEntries).ToHashSet();
     }
 }

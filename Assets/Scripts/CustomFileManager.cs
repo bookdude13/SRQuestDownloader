@@ -211,7 +211,7 @@ public class CustomFileManager : MonoBehaviour
         isMovingFiles = true;
 
         // Disable anything else while we do this
-        displayManager.DisableActions();
+        displayManager.DisableActions("Moving Downloads...");
 
         var downloadDir = "/sdcard/Download/";
         

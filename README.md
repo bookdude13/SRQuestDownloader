@@ -2,6 +2,8 @@
 
 This is an Android application for the Quest / Quest 2 for downloading custom content from synthriderz.com.
 
+![Main Screen](mainpanel.jpg "Main Screen")
+
 ## Installing
 1. Download the latest apk from the [Releases](https://github.com/bookdude13/SRQuestDownloader/releases) tab
 2. Install [SideQuest](https://sidequestvr.com/setup-howto). You'll need the Advanced Installer until this is stable and released officially.

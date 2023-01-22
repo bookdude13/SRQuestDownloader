@@ -55,7 +55,7 @@ public class DownloadManager : MonoBehaviour
     public async void FixMapTimestamps() {
         displayManager.DebugLog("Fixing map timestamp...");
 
-        displayManager.DisableActions();
+        displayManager.DisableActions("Fixing Timestamps...");
 
         try {
             var sinceTime = DateTime.UnixEpoch;

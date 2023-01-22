@@ -15,6 +15,7 @@ public class DisplayManager : MonoBehaviour, ILogHandler
     public TextMeshProUGUI ErrorText;
     public Button FetchMapsButton;
     public TextMeshProUGUI FetchMapsButtonText;
+    public DownloadFilters DownloadFilters;
     public Button FixTimestampsButton;
     public Button MoveDownloadsButton;
 
@@ -50,7 +51,7 @@ public class DisplayManager : MonoBehaviour, ILogHandler
         LastFetchText.SetText($"Last Fetch: {lastFetchTime:dd MMM yy H:mm:ss zzz}");
     }
 
-    public void DisableActions(string fetchMapsText="Fetch Songs") {
+    public void DisableActions(string fetchMapsText) {
         FixTimestampsButton.interactable = false;
         MoveDownloadsButton.interactable = false;
 
@@ -59,13 +60,24 @@ public class DisplayManager : MonoBehaviour, ILogHandler
         FetchMapsButtonText.SetText(fetchMapsText);
     }
 
+    public void UpdateFilterText() {
+        if (FetchMapsButton.interactable) {
+            var isFiltered = DownloadFilters.GetDifficultiesEnabled().Count != DownloadFilters.GetAllDifficulties().Count;
+            FetchMapsButtonText.SetText("Fetch " + (isFiltered ? "Filtered" : "All"));
+        }
+        else {
+            // Not interactable; must be doing something else. Don't update text yet.
+            // Whatever is disabling this will call EnableActions afterwards to call this again.
+        }
+    }
+
     public void EnableActions() {
         FixTimestampsButton.interactable = true;
         MoveDownloadsButton.interactable = true;
 
         FetchMapsButton.interactable = true;
-        FetchMapsButtonText.SetText("Fetch Songs");
-        FetchMapsButton.interactable = true;
+        FetchMapsButtonText.fontStyle = FontStyles.Normal;
+        UpdateFilterText();
     }
 
     public void ClearDebugLogs() {

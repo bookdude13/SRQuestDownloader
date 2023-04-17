@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class PermissionsManager : MonoBehaviour
 {
     [SerializeField] SRLogHandler logger;
+    [SerializeField] GameObject permissionDialog;
     private const string MAIN_SCENE = "MainScene";
     private const string MANAGE_EXTERNAL_STORAGE_PERMISSION = "android.permission.MANAGE_EXTERNAL_STORAGE";
 
@@ -29,6 +30,9 @@ public class PermissionsManager : MonoBehaviour
 
     public void Start()
     {
+        // Hide until we know we need it, so it looks like a delayed loading time instead of a quick change
+        permissionDialog.SetActive(false);
+
         CheckPermisisons();
     }
 
@@ -40,8 +44,8 @@ public class PermissionsManager : MonoBehaviour
         }
         else
         {
-            // Wait for settings to close and be applied. TODO how to check this?
-            logger.ErrorLog("Permissions not set");
+            // Show prompt
+            permissionDialog.SetActive(true);
         }
     }
 
@@ -124,7 +128,6 @@ public class PermissionsManager : MonoBehaviour
         {
             logger.DebugLog($"Permission {permissionName} denied. Needs manual settings change.");
             return false;
-            //AndroidRuntimePermissions.OpenSettings();
         }
     }
 

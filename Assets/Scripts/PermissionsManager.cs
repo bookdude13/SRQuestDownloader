@@ -51,7 +51,7 @@ public class PermissionsManager : MonoBehaviour
             }
         }
 
-        if (AndroidVersion.SDK_INT >= 29) // Android 11 / 'R'
+        if (AndroidVersion.SDK_INT >= 30) // Android 11 / 'R'
         {
             // Android 11+ requires MANAGE_EXTERNAL_STORAGE in order to access shared sdcard directories
             // This permission is handled a bit differently

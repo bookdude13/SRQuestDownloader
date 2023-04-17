@@ -33,6 +33,9 @@ For Quest and Quest 2/Quest Pro running < v51 this is handled through prompts re
 
 For Quest devices running v51+, Android 11 made access to the sdcard stricter. You will need to follow the in-app prompt to allow all sdcard access to the app. Failure to do so will not allow custom content to be read from or saved to the SynthRidersUC folder. For you nerds out there, this is the MANAGE_EXTERNAL_STORAGE permission.
 
+An alternative way to give this permission for v51+ devices is running the following adb command (from SideQuest or directly from a shell):  
+`adb shell appops set --uid com.bookdude13.srquestdownloader MANAGE_EXTERNAL_STORAGE allow`
+
 The first time the app runs it will index all custom songs currently on the device and cache this locally. It can take a while; be patient and watch the progress on the left panel. This should only take a long time if you have a lot of songs downloaded and you newly installed or reinstalled the app.
 
 # Features

@@ -8,25 +8,7 @@ public class PermissionsManager : MonoBehaviour
     [SerializeField] SRLogHandler logger;
     [SerializeField] GameObject permissionDialog;
     private const string MAIN_SCENE = "MainScene";
-    private const string MANAGE_EXTERNAL_STORAGE_PERMISSION = "android.permission.MANAGE_EXTERNAL_STORAGE";
 
-    // private void PermissionDenied(string permissionName)
-    // {
-    //     logger.ErrorLog($"Permission {permissionName} denied");
-    // }
-
-    // private void PermissionGranted(string permissionName)
-    // {
-    //     logger.DebugLog($"Permission {permissionName} granted");
-    // }
-
-    // private PermissionCallbacks GetPermissionCallbacks()
-    // {
-    //     var callbacks = new PermissionCallbacks();
-    //     callbacks.PermissionDenied += PermissionDenied;
-    //     callbacks.PermissionGranted += PermissionGranted;
-    //     return callbacks;
-    // }
 
     public void Start()
     {
@@ -60,56 +42,26 @@ public class PermissionsManager : MonoBehaviour
             Permission.ExternalStorageRead,
             Permission.ExternalStorageWrite,
         };
-        if (AndroidVersion.SDK_INT >= 30) // Android 11 / 'R'
-        {
-            // Android 11+ requires MANAGE_EXTERNAL_STORAGE in order to access shared sdcard directories
-            permissions.Add(MANAGE_EXTERNAL_STORAGE_PERMISSION);
-        }
 
         foreach (var permission in permissions)
         {
-            if (!EnsurePermission(permission))
+            if (!EnsureBasicPermission(permission))
             {
                 return false;
             }
         }
 
+        if (AndroidVersion.SDK_INT >= 29) // Android 11 / 'R'
+        {
+            // Android 11+ requires MANAGE_EXTERNAL_STORAGE in order to access shared sdcard directories
+            // This permission is handled a bit differently
+            return EnsureManageExternalStoragePermission();
+        }
+
         return true;
     }
 
-    // private bool EnsurePermission(string permissionName)
-    // {
-    //     if (Permission.HasUserAuthorizedPermission(permissionName))
-    //     {
-    //         logger.DebugLog($"Permission {permissionName} authorized");
-    //     }
-    //     else
-    //     {
-    //         Permission.RequestUserPermission(permissionName, GetPermissionCallbacks());
-    //     }
-
-    //     var checkResult = AndroidRuntimePermissions.CheckPermission(permissionName);
-    //     if (checkResult == AndroidRuntimePermissions.Permission.Granted)
-    //     {
-    //         logger.DebugLog($"Permission {permissionName} authorized");
-    //         return true;
-    //     }
-    //     else if (checkResult == AndroidRuntimePermissions.Permission.ShouldAsk)
-    //     {
-    //         logger.DebugLog($"Requesting permission {permissionName}");
-    //         var requestResult = AndroidRuntimePermissions.RequestPermission(permissionName);
-    //         logger.DebugLog($"Permission {permissionName} {requestResult}");
-    //         return requestResult == AndroidRuntimePermissions.Permission.Granted;
-    //     }
-    //     else
-    //     {
-    //         logger.DebugLog($"Permission {permissionName} denied.");
-    //         // this.gameObject.SetActive(true);
-    //         return false;
-    //     }
-    // }
-
-    private bool EnsurePermission(string permissionName)
+    private bool EnsureBasicPermission(string permissionName)
     {
         var checkResult = AndroidRuntimePermissions.CheckPermission(permissionName);
         if (checkResult == AndroidRuntimePermissions.Permission.Granted)
@@ -128,6 +80,33 @@ public class PermissionsManager : MonoBehaviour
         {
             logger.DebugLog($"Permission {permissionName} denied. Needs manual settings change.");
             return false;
+        }
+    }
+
+    /// Requires API 30+
+    private bool EnsureManageExternalStoragePermission()
+    {
+        using (AndroidJavaClass environment = new AndroidJavaClass("android.os.Environment"))
+        {
+            try
+            {
+                bool isExternalStorageManager = environment.CallStatic<bool>("isExternalStorageManager");
+                if (isExternalStorageManager)
+                {
+                    logger.DebugLog("MANAGE_EXTERNAL_STORAGE permission granted");
+                    return true;
+                }
+                else
+                {
+                    logger.ErrorLog("External storage permission requires user intervention");
+                    return false;
+                }
+            }
+            catch (System.Exception e)
+            {
+                logger.ErrorLog($"Failed to retrieve isExternalStorageManager: {e.Message}");
+                return false;
+            }
         }
     }
 

@@ -1,10 +1,20 @@
 # SRQuestDownloader
 
-This is an Android application for the Quest / Quest 2 for downloading custom content from synthriderz.com.
+This is an Android application for Meta/Quest VR devices for downloading custom content from synthriderz.com.
 
 ![Main Screen](mainpanel.jpg "Main Screen")
 
 ## Installing
+### From SideQuest
+2. Install [SideQuest](https://sidequestvr.com/setup-howto). You might need the Advanced Installer; not sure. Advanced Installer will for sure work.
+3. You might need to set up your device as a developer device. SideQuest might have info on that, otherwise check out [this guide](https://learn.adafruit.com/sideloading-on-oculus-quest/enable-developer-mode)
+4. Plug in your headset to your computer and allow the permissions prompt that comes up.
+5. Run SideQuest.
+6. Go to the [app page on SideQuest](https://sidequestvr.com/app/12996/srquestdownloader) and hit "Download App (sideload)" to install on your device
+7. On your Quest, go to the App Library (seleting all apps). In the upper right open the dropdown and change "All" to "Unknown Sources"
+8. Click on SRQuestDownloader to run
+
+### From Releases Tab
 1. Download the latest apk from the [Releases](https://github.com/bookdude13/SRQuestDownloader/releases) tab
 2. Install [SideQuest](https://sidequestvr.com/setup-howto). You'll need the Advanced Installer until this is stable and released officially.
 3. You might need to set up your device as a developer device. SideQuest might have info on that, otherwise check out [this guide](https://learn.adafruit.com/sideloading-on-oculus-quest/enable-developer-mode)
@@ -15,6 +25,18 @@ This is an Android application for the Quest / Quest 2 for downloading custom co
 8. Click on SRQuestDownloader to run
 
 Note: The first time this runs it will catalog locally stored custom songs. This can take 1-2 minutes if you have all custom songs downloaded already.
+
+## First Run
+SRQuestDownloader requires read and write permissions to the sdcard on the device.
+
+For Quest and Quest 2/Quest Pro running < v51 this is handled through prompts requesting access on the first boot.
+
+For Quest devices running v51+, Android 11 made access to the sdcard stricter. You will need to follow the in-app prompt to allow all sdcard access to the app. Failure to do so will not allow custom content to be read from or saved to the SynthRidersUC folder. For you nerds out there, this is the MANAGE_EXTERNAL_STORAGE permission.
+
+An alternative way to give this permission for v51+ devices is running the following adb command (from SideQuest or directly from a shell):  
+`adb shell appops set --uid com.bookdude13.srquestdownloader MANAGE_EXTERNAL_STORAGE allow`
+
+The first time the app runs it will index all custom songs currently on the device and cache this locally. It can take a while; be patient and watch the progress on the left panel. This should only take a long time if you have a lot of songs downloaded and you newly installed or reinstalled the app.
 
 # Features
 

@@ -13,6 +13,7 @@ using System;
 public class CustomFileManager : MonoBehaviour
 {
     public DisplayManager displayManager;
+    public SRLogHandler logger;
     public LocalDatabase db;
 
     private bool isMovingFiles = false;
@@ -26,7 +27,7 @@ public class CustomFileManager : MonoBehaviour
     private void Awake()
     {
         displayManager.DisableActions("Loading Local Maps...");
-        db = new LocalDatabase(displayManager);        
+        db = new LocalDatabase(logger);        
     }
 
     private async void Start() {
@@ -38,31 +39,31 @@ public class CustomFileManager : MonoBehaviour
     public async void AddLocalMap(string mapPath, MapItem mapFromZ) {
         MapZMetadata metadata = await ParseLocalMap(mapPath, mapFromZ);
         if (metadata == null) {
-            displayManager.ErrorLog("Failed to parse map at " + mapPath);
+            logger.ErrorLog("Failed to parse map at " + mapPath);
             return;
         }
 
-        db.AddMap(metadata, displayManager);
+        db.AddMap(metadata, logger);
     }
 
     /// Useful for debugging. Clear out all custom songs
     public async void DeleteCustomSongs() {
         try {
             var mapFiles = GetSynthriderzMapFiles(Path.Join(synthCustomContentDir, "CustomSongs"));
-            displayManager.DebugLog($"Deleting {mapFiles.Length} files...");
+            logger.DebugLog($"Deleting {mapFiles.Length} files...");
             foreach (var filePath in mapFiles) {
                 File.Delete(filePath);
             }
         }
         catch (System.Exception e) {
-            displayManager.ErrorLog($"Failed to delete files: {e.Message}");
+            logger.ErrorLog($"Failed to delete files: {e.Message}");
         }
 
         await RefreshLocalDatabase(synthCustomContentDir);
     }
 
     public void StartMoveDownloadedFiles()
-    {
+    {        
         StartCoroutine(MoveDownloadedFiles());
     }
 
@@ -71,12 +72,12 @@ public class CustomFileManager : MonoBehaviour
     private string[] GetSynthriderzZipFiles(string rootDirectory) {
         try {
             var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting zip files from {rootDirectory}. Directory exists? {directoryExists}");
+            logger.DebugLog($"Getting zip files from {rootDirectory}. Directory exists? {directoryExists}");
             if (directoryExists) {
                 return Directory.GetFiles(rootDirectory, "*synthriderz-beatmaps.zip");
             }
         } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+            logger.ErrorLog("Failed to get files: " + e.Message);
         }
 
         return new string[] {};
@@ -87,12 +88,12 @@ public class CustomFileManager : MonoBehaviour
     private string[] GetSynthriderzMapFiles(string rootDirectory) {
         try {
             var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting map files from {rootDirectory}. Directory exists? {directoryExists}");
+            logger.DebugLog($"Getting map files from {rootDirectory}. Directory exists? {directoryExists}");
             if (directoryExists) {
                 return Directory.GetFiles(rootDirectory, $"*{MAP_EXTENSION}");
             }
         } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+            logger.ErrorLog("Failed to get files: " + e.Message);
         }
 
         return new string[] {};
@@ -103,7 +104,7 @@ public class CustomFileManager : MonoBehaviour
     private string[] GetSynthriderzStageFiles(string rootDirectory) {
         try {
             var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting stage files from {rootDirectory}. Directory exists? {directoryExists}");
+            logger.DebugLog($"Getting stage files from {rootDirectory}. Directory exists? {directoryExists}");
             if (directoryExists) {
                 var filePaths = new List<string>();
                 foreach (var stageExtension in STAGE_EXTENSIONS) {
@@ -112,7 +113,7 @@ public class CustomFileManager : MonoBehaviour
                 return filePaths.ToArray();
             }
         } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+            logger.ErrorLog("Failed to get files: " + e.Message);
         }
 
         return new string[] {};
@@ -123,13 +124,13 @@ public class CustomFileManager : MonoBehaviour
     private string[] GetSynthriderzPlaylistFiles(string rootDirectory) {
         try {
             var directoryExists = Directory.Exists(rootDirectory);
-            displayManager.DebugLog($"Getting playlist files from {rootDirectory}. Directory exists? {directoryExists}");
+            logger.DebugLog($"Getting playlist files from {rootDirectory}. Directory exists? {directoryExists}");
             if (directoryExists) {
                 var filePaths = new List<string>();
                 return Directory.GetFiles(rootDirectory, $"*{PLAYLIST_EXTENSION}");
             }
         } catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to get files: " + e.Message);
+            logger.ErrorLog("Failed to get files: " + e.Message);
         }
 
         return new string[] {};
@@ -141,29 +142,29 @@ public class CustomFileManager : MonoBehaviour
     /// TODO add decals and profiles
     private IEnumerator ExtractSynthriderzZip(string zipPath, string synthDirectory) {
         if (!File.Exists(zipPath)) {
-            displayManager.ErrorLog($"File {zipPath} doesn't exist! Not extracting");
+            logger.ErrorLog($"File {zipPath} doesn't exist! Not extracting");
             yield break;
         }
 
         if (!Directory.Exists(synthDirectory)) {
-            displayManager.ErrorLog($"Destination {synthDirectory} doesn't exist!");
+            logger.ErrorLog($"Destination {synthDirectory} doesn't exist!");
             yield break;
         }
 
         // Sanity check
         if (!lzip.validateFile(zipPath)) {
-            displayManager.ErrorLog($"Failed to validate {zipPath}");
+            logger.ErrorLog($"Failed to validate {zipPath}");
             yield break;
         }
 
         // Get general info about the zip archive
         var uncompressedBytes = lzip.getFileInfo(zipPath);
         if (uncompressedBytes == 0) {
-            displayManager.ErrorLog("Failed to get info on zip file");
+            logger.ErrorLog("Failed to get info on zip file");
             yield break;
         }
         else {
-            displayManager.DebugLog($"Total zip size: {uncompressedBytes}");
+            logger.DebugLog($"Total zip size: {uncompressedBytes}");
         }
 
         // Get zip entries
@@ -187,11 +188,11 @@ public class CustomFileManager : MonoBehaviour
             }
 
             if (destPath != null) {
-                displayManager.DebugLog($"Extracting {filePath} to {destPath}");
+                logger.DebugLog($"Extracting {filePath} to {destPath}");
                 yield return null;
                 int result = lzip.extract_entry(zipPath, filePath, destPath);
                 if (result != 1) {
-                    displayManager.ErrorLog($"Failed to extract {filePath}! Result: {result}. Skipping");
+                    logger.ErrorLog($"Failed to extract {filePath}! Result: {result}. Skipping");
                     continue;
                 }
             }
@@ -201,10 +202,10 @@ public class CustomFileManager : MonoBehaviour
     /// Move synth custom content from the Downloads folder to custom content directories.
     /// Extracts zip files that look like they were downloaded from synthriderz.com
     private IEnumerator MoveDownloadedFiles() {
-        displayManager.DebugLog("Trying to move custom content from Download folder...");
+        logger.DebugLog("Trying to move custom content from Download folder...");
 
         if (isMovingFiles) {
-            displayManager.DebugLog("Already moving! Ignoring...");
+            logger.DebugLog("Already moving! Ignoring...");
             yield break;
         }
 
@@ -215,46 +216,46 @@ public class CustomFileManager : MonoBehaviour
 
         var downloadDir = "/sdcard/Download/";
         
-        displayManager.DebugLog($"Moving downloaded zips...");
+        logger.DebugLog($"Moving downloaded zips...");
         var zipFilePaths = GetSynthriderzZipFiles(downloadDir);
-        displayManager.DebugLog($"{zipFilePaths.Length} zip files found");
+        logger.DebugLog($"{zipFilePaths.Length} zip files found");
         foreach (var filePath in zipFilePaths) {
-            displayManager.DebugLog("Zip file: " + filePath);
+            logger.DebugLog("Zip file: " + filePath);
             yield return ExtractSynthriderzZip(filePath, synthCustomContentDir);
             try {
                 File.Delete(filePath);
             } catch (System.Exception e) {
-                displayManager.ErrorLog($"Failed to delete zip {filePath}: {e.Message}");
+                logger.ErrorLog($"Failed to delete zip {filePath}: {e.Message}");
                 continue;
             }
         }
         
-        displayManager.DebugLog($"Moving downloaded map files...");
+        logger.DebugLog($"Moving downloaded map files...");
         var mapFilePaths = GetSynthriderzMapFiles(downloadDir);
-        displayManager.DebugLog($"{mapFilePaths.Length} map files found");
+        logger.DebugLog($"{mapFilePaths.Length} map files found");
         foreach (var filePath in mapFilePaths) {
             MoveCustomSong(filePath);
             yield return null;
         }
 
-        displayManager.DebugLog($"Moving downloaded stage files...");
+        logger.DebugLog($"Moving downloaded stage files...");
         var stageFilePaths = GetSynthriderzStageFiles(downloadDir);
-        displayManager.DebugLog($"{stageFilePaths.Length} stage files found");
+        logger.DebugLog($"{stageFilePaths.Length} stage files found");
         foreach (var filePath in stageFilePaths) {
             MoveCustomStage(filePath);
             yield return null;
         }
 
-        displayManager.DebugLog($"Moving downloaded playlist files...");
+        logger.DebugLog($"Moving downloaded playlist files...");
         var playlistFilePaths = GetSynthriderzPlaylistFiles(downloadDir);
-        displayManager.DebugLog($"{playlistFilePaths.Length} playlist files found");
+        logger.DebugLog($"{playlistFilePaths.Length} playlist files found");
         foreach (var filePath in playlistFilePaths) {
             MoveCustomPlaylist(filePath);
             yield return null;
         }
 
-        displayManager.DebugLog("Files moved. Timestamps aren't updated.");
-        displayManager.DebugLog("Consider fixing timestamps for downloaded content!");
+        logger.DebugLog("Files moved. Timestamps aren't updated.");
+        logger.DebugLog("Consider fixing timestamps for downloaded content!");
 
         displayManager.EnableActions();
 
@@ -267,11 +268,11 @@ public class CustomFileManager : MonoBehaviour
     public string MoveCustomSong(string filePath, DateTime? publishedAtUtc=null) {
         var mapFileName = Path.GetFileName(filePath);
         var destPath = Path.Join(synthCustomContentDir, "CustomSongs", mapFileName);
-        FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        FileUtils.MoveFileOverwrite(filePath, destPath, logger);
 
         if (publishedAtUtc.HasValue) {
-            // displayManager.DebugLog($"Setting {mapFileName} file time to {publishedAtUtc.GetValueOrDefault()}");
-            FileUtils.SetDateModifiedUtc(destPath, publishedAtUtc.GetValueOrDefault(), displayManager);
+            // logger.DebugLog($"Setting {mapFileName} file time to {publishedAtUtc.GetValueOrDefault()}");
+            FileUtils.SetDateModifiedUtc(destPath, publishedAtUtc.GetValueOrDefault(), logger);
         }
 
         return destPath;
@@ -281,7 +282,7 @@ public class CustomFileManager : MonoBehaviour
     /// Returns the final path of the stage
     public string MoveCustomStage(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "CustomStages", Path.GetFileName(filePath));
-        FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;
     }
 
@@ -291,13 +292,13 @@ public class CustomFileManager : MonoBehaviour
     public string MoveCustomPlaylist(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "Playlist", Path.GetFileName(filePath));
         // TODO actually check existing files for matching identifier, since the game can rename them!
-        FileUtils.MoveFileOverwrite(filePath, destPath, displayManager);
+        FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;
     }
 
     /// Returns a new list with all maps in the source list that aren't contained in the user's custom song directory already
     public List<MapItem> FilterOutExistingMaps(List<MapItem> maps) {
-        displayManager.DebugLog($"{db.GetNumberOfMaps()} local maps found");
+        logger.DebugLog($"{db.GetNumberOfMaps()} local maps found");
         return maps.Where(mapItem => db.GetFromHash(mapItem.hash) == null).ToList();
     }
 
@@ -312,12 +313,12 @@ public class CustomFileManager : MonoBehaviour
         try {
             var mapsDir = Path.Join(synthCustomContentDir, "CustomSongs");
             if (!Directory.Exists(mapsDir)) {
-                displayManager.ErrorLog("Custom maps directory doesn't exist! Creating...");
+                logger.ErrorLog("Custom maps directory doesn't exist! Creating...");
                 Directory.CreateDirectory(mapsDir);
             }
 
             var files = Directory.GetFiles(mapsDir, $"*{MAP_EXTENSION}");
-            displayManager.DebugLog($"Updating database with map files ({files.Length} found)...");
+            logger.DebugLog($"Updating database with map files ({files.Length} found)...");
             // This will implicitly remove any entries that are only present in the db
             int count = 0;
             int totalFiles = files.Length;
@@ -325,44 +326,44 @@ public class CustomFileManager : MonoBehaviour
                 MapZMetadata dbMetadata = db.GetFromPath(filePath);
                 if (dbMetadata != null) {
                     // DB has this version already - good to go
-                    // displayManager.DebugLog(Path.GetFileName(filePath) + " already in db");
+                    // logger.DebugLog(Path.GetFileName(filePath) + " already in db");
                     localHashes.Add(dbMetadata.hash);
                 }
                 else {
                     // DB doesn't have this version; parse and add
                     MapZMetadata metadata = await ParseLocalMap(filePath);
                     if (metadata == null) {
-                        displayManager.ErrorLog("Failed to parse map at " + filePath);
+                        logger.ErrorLog("Failed to parse map at " + filePath);
                         continue;
                     }
 
                     localHashes.Add(metadata.hash);
-                    db.AddMap(metadata, displayManager);
+                    db.AddMap(metadata, logger);
                 }
 
                 count++;
                 if (count % 100 == 0) {
-                    displayManager.DebugLog($"Processed {count}/{totalFiles}...");
+                    logger.DebugLog($"Processed {count}/{totalFiles}...");
                     
                     // Save partial progress; ignore errors
                     await db.Save();
                 }
             }
-            displayManager.DebugLog($"{totalFiles} local files processed");
+            logger.DebugLog($"{totalFiles} local files processed");
         }
         catch (System.Exception e) {
-            displayManager.ErrorLog($"Failed to get local maps: {e.Message}");
+            logger.ErrorLog($"Failed to get local maps: {e.Message}");
             return;
         }
 
         // Successfully loaded maps
         // Remove all db entries that are no longer on the local file system
-        displayManager.DebugLog("Removing database entries that aren't on the local file system...");
+        logger.DebugLog("Removing database entries that aren't on the local file system...");
         db.RemoveMissingHashes(localHashes);
         
         // Save to db for next run
         if (!await db.Save()) {
-            displayManager.ErrorLog("Failed to save db");
+            logger.ErrorLog("Failed to save db");
             // ignore for now; we still loaded everything fine
         }
     }
@@ -390,12 +391,12 @@ public class CustomFileManager : MonoBehaviour
 
                 // No return, so missing metadata file.
                 var fileName = Path.GetFileName(filePath);
-                displayManager.DebugLog($"Missing {metadataFileName} in map {fileName}");
+                logger.DebugLog($"Missing {metadataFileName} in map {fileName}");
                 if (mapFromZ == null || mapFromZ.hash == null || mapFromZ.id <= 0) {
-                    displayManager.ErrorLog($"Missing {metadataFileName}. Refetch from Z site.");
+                    logger.ErrorLog($"Missing {metadataFileName}. Refetch from Z site.");
                 } else {
                     // We have information from Z to add this in ourselves
-                    displayManager.ErrorLog($"Creating missing {metadataFileName} for {fileName}");
+                    logger.ErrorLog($"Creating missing {metadataFileName} for {fileName}");
                     try {
                         JObject zMetadata = new JObject(
                             new JProperty("id", mapFromZ.id),
@@ -408,13 +409,13 @@ public class CustomFileManager : MonoBehaviour
 
                         return new MapZMetadata(mapFromZ.id, mapFromZ.hash, filePath);
                     } catch (Exception e) {
-                        displayManager.ErrorLog("Failed to create missing metadata entry: " + e.Message);
+                        logger.ErrorLog("Failed to create missing metadata entry: " + e.Message);
                     }
                 }
             }
         }
         catch (System.Exception e) {
-            displayManager.ErrorLog($"Failed to parse local map {filePath}: {e.Message}");
+            logger.ErrorLog($"Failed to parse local map {filePath}: {e.Message}");
         }
 
         return null;

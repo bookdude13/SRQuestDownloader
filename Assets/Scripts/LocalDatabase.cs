@@ -12,7 +12,7 @@ public class LocalDatabase {
     [JsonIgnore]
     private readonly string LOCAL_DATABASE_NAME = "SRQD_local.db";
     [JsonIgnore]
-    private DisplayManager displayManager;
+    private SRLogHandler logger;
 
     [JsonProperty]
     private List<MapZMetadata> localMapMetadata = new List<MapZMetadata>();
@@ -26,8 +26,8 @@ public class LocalDatabase {
     private Dictionary<string, MapZMetadata> localMapHashLookup = new Dictionary<string, MapZMetadata>();
 
 
-    public LocalDatabase(DisplayManager displayManager) {
-        this.displayManager = displayManager;
+    public LocalDatabase(SRLogHandler logger) {
+        this.logger = logger;
     }
 
     /// Gets locally stored metadata based on file path.
@@ -56,7 +56,7 @@ public class LocalDatabase {
 
     /// Adds map metadata to database.
     /// If the file path is already present or hash is already present replace
-    public void AddMap(MapZMetadata mapMeta, ILogHandler logger) {
+    public void AddMap(MapZMetadata mapMeta, SRLogHandler logger) {
         // Remove existing to replace with new
         if (localMapPathLookup.ContainsKey(mapMeta.FilePath)) {
             logger.DebugLog($"Removing map with existing path {mapMeta.FilePath}");
@@ -87,7 +87,7 @@ public class LocalDatabase {
         }
 
         foreach (var mapMeta in toRemove) {
-            displayManager.DebugLog($"db map not found in filesystem; removing {Path.GetFileName(mapMeta.FilePath)}");
+            logger.DebugLog($"db map not found in filesystem; removing {Path.GetFileName(mapMeta.FilePath)}");
             localMapMetadata.Remove(mapMeta);
             localMapPathLookup.Remove(mapMeta.FilePath);
             localMapHashLookup.Remove(mapMeta.hash);
@@ -98,14 +98,14 @@ public class LocalDatabase {
     /// Note: Not done implicitly upon creation!
     public async Task Load() {
         if (!File.Exists(GetDbPath())) {
-            displayManager.DebugLog("DB doesn't exist; creating...");
+            logger.DebugLog("DB doesn't exist; creating...");
             await Save();
         };
 
-        displayManager.DebugLog("Loading database...");
-        LocalDatabase localDb = await FileUtils.ReadFileJson<LocalDatabase>(GetDbPath(), displayManager);
+        logger.DebugLog("Loading database...");
+        LocalDatabase localDb = await FileUtils.ReadFileJson<LocalDatabase>(GetDbPath(), logger);
         if (localDb == null) {
-            displayManager.ErrorLog("Failed to load local database!");
+            logger.ErrorLog("Failed to load local database!");
             return;
         }
 
@@ -116,7 +116,7 @@ public class LocalDatabase {
             localMapPathLookup.Add(mapMeta.FilePath, mapMeta);
             localMapHashLookup.Add(mapMeta.hash, mapMeta);
         }
-        displayManager.DebugLog("DB loaded");
+        logger.DebugLog("DB loaded");
     }
 
     /// Saves db state to file
@@ -125,16 +125,16 @@ public class LocalDatabase {
         try {
             string asJson = JsonConvert.SerializeObject(this, Formatting.Indented);
             string tempFile = Path.Join(Application.temporaryCachePath, Guid.NewGuid().ToString());
-            displayManager.DebugLog($"Saving db ({localMapMetadata.Count} maps)");
-            if (!await FileUtils.WriteToFile(asJson, tempFile, displayManager)) {
-                displayManager.ErrorLog("Failed to write db to temp file");
+            logger.DebugLog($"Saving db ({localMapMetadata.Count} maps)");
+            if (!await FileUtils.WriteToFile(asJson, tempFile, logger)) {
+                logger.ErrorLog("Failed to write db to temp file");
                 return false;
             }
 
-            return FileUtils.MoveFileOverwrite(tempFile, GetDbPath(), displayManager);
+            return FileUtils.MoveFileOverwrite(tempFile, GetDbPath(), logger);
         }
         catch (System.Exception e) {
-            displayManager.ErrorLog("Failed to save db: " + e.Message);
+            logger.ErrorLog("Failed to save db: " + e.Message);
             return false;
         }
     }

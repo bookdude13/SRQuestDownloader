@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// Handles selecting download filters
 public class DownloadFilters : MonoBehaviour {
     public TextMeshProUGUI TimeSelectionText;
-    public DisplayManager displayManager;
+    public SRLogHandler logger;
     
     public DownloadFilterDifficulty[] difficultyFilters;
     
@@ -50,7 +50,7 @@ public class DownloadFilters : MonoBehaviour {
 
         currentTimeSelectionIdx = (currentTimeSelectionIdx + 1) % TimeSelectionTextOptions.Length;
         TimeSelectionText.SetText(TimeSelectionTextOptions[currentTimeSelectionIdx]);
-        displayManager.DebugLog("Setting download time to " + GetDateCutoffFromCurrentSelection(DateTime.UtcNow).ToLocalTime());
+        logger.DebugLog("Setting download time to " + GetDateCutoffFromCurrentSelection(DateTime.UtcNow).ToLocalTime());
     }
 
     public DateTime GetDateCutoffFromCurrentSelection(DateTime nowUtc) {

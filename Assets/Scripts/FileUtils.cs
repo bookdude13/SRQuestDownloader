@@ -91,4 +91,14 @@ public static class FileUtils {
             return false;
         }
     }
+
+    public static bool DeleteFile(string filePath, SRLogHandler logger) {
+        try {
+            File.Delete(filePath);
+            return true;
+        } catch (Exception e) {
+            logger.ErrorLog($"Failed to delete file at path {filePath}: {e.Message}");
+            return false;
+        }
+    }
 }

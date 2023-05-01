@@ -17,7 +17,7 @@ public class CustomFileManager : MonoBehaviour
     public LocalDatabase db;
 
     private bool isMovingFiles = false;
-    private string synthCustomContentDir = "/sdcard/SynthRidersUC/";
+    public readonly static string synthCustomContentDir = "/sdcard/SynthRidersUC/";
 
     private readonly string MAP_EXTENSION = ".synth";
     private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };

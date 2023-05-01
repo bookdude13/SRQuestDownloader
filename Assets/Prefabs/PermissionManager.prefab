@@ -367,7 +367,7 @@ GameObject:
   - component: {fileID: 7307966934937974471}
   - component: {fileID: 2915222149823587186}
   m_Layer: 0
-  m_Name: btnOpenSettings
+  m_Name: btnRequest
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -391,8 +391,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -0.00000047683, y: 0.884}
-  m_SizeDelta: {x: 0.72855, y: 0.2044}
+  m_AnchoredPosition: {x: 0.0000004787, y: 0.884}
+  m_SizeDelta: {x: 0.7684, y: 0.2044}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5977664703978787138
 CanvasRenderer:
@@ -478,7 +478,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3473712114231568492}
         m_TargetAssemblyTypeName: PermissionsManager, Assembly-CSharp
-        m_MethodName: OpenSettings
+        m_MethodName: RequestExternalStoragePermission
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -554,7 +554,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Open Settings
+  m_text: Request Permission
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -936,7 +936,7 @@ Transform:
   m_Children:
   - {fileID: 2469621838088484099}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3473712114231568492
 MonoBehaviour:
@@ -951,7 +951,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   logger: {fileID: 0}
-  permissionDialog: {fileID: 9178732307991409270}
+  permissionDialog: {fileID: 7273170124646057192}
 --- !u!1 &7714972048643286797
 GameObject:
   m_ObjectHideFlags: 0
@@ -1021,12 +1021,11 @@ MonoBehaviour:
   m_text: 'Some storage permissions are missing.
 
     Note, Meta/Oculus devices running
-    v51 or newer require additional permissions to access the file system.
+    v51 or newer require additional permissions to be manually set by users.
 
     Click
-    the button below to open up the application settings, then click "Permissions"and
-    "Settings". Enable "Allow access to manage all files" and any other storage permissions
-    until the "Check" button below works.'
+    the "Request Permissions" button below to request all necessary permissions,
+    then re-check permissions and continue to the main app.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1219,7 +1218,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3473712114231568492}
         m_TargetAssemblyTypeName: PermissionsManager, Assembly-CSharp
-        m_MethodName: CheckPermisisons
+        m_MethodName: CheckPermissionsBlocking
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1381,6 +1380,7 @@ GameObject:
   - component: {fileID: 5655054355868043124}
   - component: {fileID: 6183113246730756203}
   - component: {fileID: 7129572916843915055}
+  - component: {fileID: 7273170124646057192}
   m_Layer: 0
   m_Name: PermissionDialog
   m_TagString: Untagged
@@ -1473,3 +1473,20 @@ MonoBehaviour:
     m_Bits: 4294967295
   pointer: {fileID: 0}
   sortOrder: 0
+--- !u!114 &7273170124646057192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9178732307991409270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1325ea13da5357f4b91390f3c0c47b5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buttons:
+  - {fileID: 3450466288842429744}
+  - {fileID: 8516794690602686993}
+  - {fileID: 5324294027122851720}
+  logger: {fileID: 0}

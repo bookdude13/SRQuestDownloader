@@ -1021,12 +1021,11 @@ MonoBehaviour:
   m_text: 'Some storage permissions are missing.
 
     Note, Meta/Oculus devices running
-    v51 or newer require additional permissions to access the file system.
+    v51 or newer require additional permissions to be manually set by users.
 
     Click
-    the button below to open up the application settings, then click "Permissions"and
-    "Settings". Enable "Allow access to manage all files" and any other storage permissions
-    until the "Check" button below works.'
+    the "Request Permissions" button below to request all necessary permissions,
+    then re-check permissions and continue to the main app.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

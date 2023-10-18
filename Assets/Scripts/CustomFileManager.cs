@@ -33,6 +33,9 @@ public class CustomFileManager : MonoBehaviour
     private async void Start() {
         await RefreshLocalDatabase(synthCustomContentDir);
         displayManager.EnableActions();
+        
+        // Immediately migrate old playlist files
+        MigratePlaylistsForMixedRealityUpdate();
     }
 
     /// Parses the map at the given path and adds it to the collection
@@ -184,7 +187,7 @@ public class CustomFileManager : MonoBehaviour
             }
             else if (Path.GetExtension(filePath) == PLAYLIST_EXTENSION) {
                 // Ignore position within zip file - if it's the right extension, put it in the custom dir directly
-                destPath = Path.Join(synthDirectory, "Playlist", fileName);
+                destPath = Path.Join(synthDirectory, "CustomPlaylists", fileName);
             }
 
             if (destPath != null) {
@@ -294,6 +297,29 @@ public class CustomFileManager : MonoBehaviour
         // TODO actually check existing files for matching identifier, since the game can rename them!
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;
+    }
+
+    /// <summary>
+    /// With the SynthRiders mixed reality update (aka Remastered) from Aug 2023, the playlist directory moved.
+    /// This migrates playlist files to the new location.
+    /// </summary>
+    public void MigratePlaylistsForMixedRealityUpdate()
+    {
+        try
+        {
+            var oldPlaylistDir = Path.Join(synthCustomContentDir, "Playlist");
+            var newPlaylistDir = Path.Join(synthCustomContentDir, "CustomPlaylists");
+            foreach (var file in Directory.GetFiles(oldPlaylistDir, $"*.{PLAYLIST_EXTENSION}"))
+            {
+                var destPath = Path.Join(newPlaylistDir, Path.GetFileName(file));
+                logger.DebugLog($"Migrating playlist from {file} to {destPath}");
+                FileUtils.MoveFileOverwrite(file, destPath, logger);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.ErrorLog("Failed to migrate playlist files: " + e.Message);
+        }
     }
 
     /// Returns a new list with all maps in the source list that aren't contained in the user's custom song directory already

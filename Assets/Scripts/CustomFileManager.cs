@@ -307,12 +307,16 @@ public class CustomFileManager : MonoBehaviour
     {
         try
         {
+            logger.DebugLog($"Migrating playlists");
             var oldPlaylistDir = Path.Join(synthCustomContentDir, "Playlist");
             var newPlaylistDir = Path.Join(synthCustomContentDir, "CustomPlaylists");
-            foreach (var file in Directory.GetFiles(oldPlaylistDir, $"*.{PLAYLIST_EXTENSION}"))
+            foreach (var file in Directory.GetFiles(oldPlaylistDir))
             {
+                if (Path.GetExtension(file) != PLAYLIST_EXTENSION)
+                    continue;
+
                 var destPath = Path.Join(newPlaylistDir, Path.GetFileName(file));
-                logger.DebugLog($"Migrating playlist from {file} to {destPath}");
+                logger.ErrorLog($"Migrating playlist from {file} to {destPath}");
                 FileUtils.MoveFileOverwrite(file, destPath, logger);
             }
         }

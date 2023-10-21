@@ -293,7 +293,7 @@ public class CustomFileManager : MonoBehaviour
     /// Returns the final path of the playlist
     /// TODO this doesn't check and remove different named playlists with the same identifier!
     public string MoveCustomPlaylist(string filePath) {
-        var destPath = Path.Join(synthCustomContentDir, "Playlist", Path.GetFileName(filePath));
+        var destPath = Path.Join(synthCustomContentDir, "CustomPlaylists", Path.GetFileName(filePath));
         // TODO actually check existing files for matching identifier, since the game can rename them!
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;

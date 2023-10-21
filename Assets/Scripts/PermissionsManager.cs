@@ -10,6 +10,7 @@ public class PermissionsManager : MonoBehaviour
 {
     [SerializeField] SRLogHandler logger;
     [SerializeField] PermissionsDialog permissionDialog;
+    [SerializeField] private bool debugDenyPermission = false;
     private const string MAIN_SCENE = "MainScene";
     // https://developer.android.com/reference/android/provider/Settings#ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
     private const string ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION = "android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION";
@@ -62,6 +63,9 @@ public class PermissionsManager : MonoBehaviour
                 return false;
             }
         }
+        
+        if (debugDenyPermission)
+            return false;
 
         if (AndroidVersion.SDK_INT >= 30) // Android 11 / 'R'
         {
@@ -76,22 +80,17 @@ public class PermissionsManager : MonoBehaviour
     private bool EnsureBasicPermission(string permissionName)
     {
         var checkResult = AndroidRuntimePermissions.CheckPermission(permissionName);
-        if (checkResult == AndroidRuntimePermissions.Permission.Granted)
+        if (checkResult)
         {
             logger.DebugLog($"Permission {permissionName} authorized");
             return true;
         }
-        else if (checkResult == AndroidRuntimePermissions.Permission.ShouldAsk)
+        else
         {
             logger.DebugLog($"Requesting permission {permissionName}");
             var requestResult = AndroidRuntimePermissions.RequestPermission(permissionName);
             logger.DebugLog($"Permission {permissionName} {requestResult}");
             return requestResult == AndroidRuntimePermissions.Permission.Granted;
-        }
-        else
-        {
-            logger.DebugLog($"Permission {permissionName} denied. Needs manual settings change.");
-            return false;
         }
     }
 

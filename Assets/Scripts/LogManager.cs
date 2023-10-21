@@ -96,6 +96,8 @@ public class LogManager : SRLogHandler
             return;
         }
 
+        return;
+
         string logFile = GetLogFilePath();
         if (!File.Exists(logFile)) {
             try {
@@ -104,6 +106,12 @@ public class LogManager : SRLogHandler
             }
             catch (Exception e) {
                 alternateErrorHandler.ErrorLog("Failed to create log file: " + e.Message);
+                return;
+            }
+
+            if (!File.Exists(logFile))
+            {
+                alternateErrorHandler.ErrorLog("Failed to create log file! No exception, it just doesn't exist");
                 return;
             }
         }

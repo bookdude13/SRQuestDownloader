@@ -1,0 +1,57 @@
+{
+    "name": "InputActions",
+    "maps": [
+        {
+            "name": "XR Controller",
+            "id": "bad54027-e38e-40e1-b4f8-1aa9aaf63719",
+            "actions": [
+                {
+                    "name": "SelectUI",
+                    "type": "Button",
+                    "id": "a6759ae0-4941-4c10-943d-35a10fd0def6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "94ba39e0-d0e3-4af1-9ab7-c29f7fb7095d",
+                    "path": "<XRController>/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "SelectUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e12f4293-4722-439d-8fe7-c919cd1bfd2e",
+                    "path": "<XRController>/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "SelectUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "XR",
+            "bindingGroup": "XR",
+            "devices": [
+                {
+                    "devicePath": "<XRController>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}

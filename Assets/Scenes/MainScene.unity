@@ -920,6 +920,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 246596740}
   m_CullTransparentMesh: 1
+--- !u!20 &321209693 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 9083238104197488665, guid: 03f6d0ce3846377458d77f6db9f8bd7f,
+    type: 3}
+  m_PrefabInstance: {fileID: 6953706985519316308}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &332003133
 GameObject:
   m_ObjectHideFlags: 0
@@ -3025,7 +3031,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TimeSelectionText: {fileID: 40598984}
-  logger: {fileID: 0}
+  logger: {fileID: 1494435375}
   difficultyFilters:
   - {fileID: 1409598250}
   - {fileID: 1679267652}
@@ -3389,6 +3395,16 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2072570093559636452, guid: 5a55e45c14e905c4390aca0b8e999c35,
+        type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 321209693}
+    - target: {fileID: 8176186894851910149, guid: 5a55e45c14e905c4390aca0b8e999c35,
+        type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 321209693}
     - target: {fileID: 8793799339448635914, guid: 5a55e45c14e905c4390aca0b8e999c35,
         type: 3}
       propertyPath: m_Name
@@ -4777,7 +4793,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
+  m_BlockingObjects: 3
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -4816,7 +4832,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 2
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 321209693}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1

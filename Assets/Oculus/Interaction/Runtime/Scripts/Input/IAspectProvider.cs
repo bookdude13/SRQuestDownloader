@@ -18,18 +18,10 @@
  * limitations under the License.
  */
 
-namespace Oculus.Interaction.Input
+using System;
+
+namespace Oculus.Interaction.Deprecated
 {
-    /// <summary>
-    /// Interface that allows querying for aspects of an specific type.
-    /// An Aspect provides additional functionality on top of what the implementing class provides.
-    /// </summary>
-    public interface IAspectProvider
-    {
-        /// <summary>
-        /// Provide an Aspect of the specified type.
-        /// </summary>
-        /// <returns>True if an aspect of the requested type was found, false otherwise</returns>
-        bool TryGetAspect<TAspect>(out TAspect aspect) where TAspect : class;
-    }
+    [Obsolete]
+    public interface IAspectProvider { }
 }

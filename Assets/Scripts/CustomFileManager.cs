@@ -27,7 +27,6 @@ public class CustomFileManager : MonoBehaviour
         ".stagedroid" // Q2+ stage files, used for both spin and non-spin stages
     };
     private readonly string PLAYLIST_EXTENSION = ".playlist";
-    private readonly string AVATAR_EXTENSION = ".vfx";
 
 
     private void Awake()
@@ -137,23 +136,6 @@ public class CustomFileManager : MonoBehaviour
             if (directoryExists) {
                 var filePaths = new List<string>();
                 return Directory.GetFiles(rootDirectory, $"*{PLAYLIST_EXTENSION}");
-            }
-        } catch (System.Exception e) {
-            logger.ErrorLog("Failed to get files: " + e.Message);
-        }
-
-        return new string[] {};
-    }
-    
-    /// Returns list of all avatars downloaded from synthriderz.com located in the given directory.
-    /// If none found or error occurs, returns empty array
-    private string[] GetSynthriderzAvatarFiles(string rootDirectory) {
-        try {
-            var directoryExists = Directory.Exists(rootDirectory);
-            logger.DebugLog($"Getting avatar files from {rootDirectory}. Directory exists? {directoryExists}");
-            if (directoryExists) {
-                var filePaths = new List<string>();
-                return Directory.GetFiles(rootDirectory, $"*{AVATAR_EXTENSION}");
             }
         } catch (System.Exception e) {
             logger.ErrorLog("Failed to get files: " + e.Message);
@@ -279,14 +261,6 @@ public class CustomFileManager : MonoBehaviour
             MoveCustomPlaylist(filePath);
             yield return null;
         }
-        
-        logger.DebugLog($"Moving downloaded avatar files...");
-        var avatarFilePaths = GetSynthriderzAvatarFiles(downloadDir);
-        logger.DebugLog($"{avatarFilePaths.Length} avatar files found");
-        foreach (var filePath in avatarFilePaths) {
-            MoveCustomAvatar(filePath);
-            yield return null;
-        }
 
         logger.DebugLog("Files moved. Timestamps aren't updated.");
         logger.DebugLog("Consider fixing timestamps for downloaded content!");
@@ -325,15 +299,6 @@ public class CustomFileManager : MonoBehaviour
     /// TODO this doesn't check and remove different named playlists with the same identifier!
     public string MoveCustomPlaylist(string filePath) {
         var destPath = Path.Join(synthCustomContentDir, "CustomPlaylists", Path.GetFileName(filePath));
-        // TODO actually check existing files for matching identifier, since the game can rename them!
-        FileUtils.MoveFileOverwrite(filePath, destPath, logger);
-        return destPath;
-    }
-    
-    /// Moves a custom avatar to the proper synth directory
-    /// Returns the final path of the avatar file
-    public string MoveCustomAvatar(string filePath) {
-        var destPath = Path.Join(synthCustomContentDir, "Avatars", Path.GetFileName(filePath));
         // TODO actually check existing files for matching identifier, since the game can rename them!
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;

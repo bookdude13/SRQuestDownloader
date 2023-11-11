@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
+  <!-- For Android 11+ we need to specify that we'll be querying for the SynthRiders launch intent -->
+  <queries>
+    <package android:name="com.kluge.SynthRiders" />
+  </queries>
   <!-- Note that requestLegacyExternalStorage is ignored by Android for Android 11+,
   but MANAGE_EXTERNAL_STORAGE isn't available until then, so both need to be present. -->
   <application android:label="@string/app_name" android:icon="@mipmap/app_icon" android:allowBackup="false" android:requestLegacyExternalStorage="true">

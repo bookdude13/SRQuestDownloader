@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class PermissionsManager : MonoBehaviour
@@ -15,6 +16,7 @@ public class PermissionsManager : MonoBehaviour
     // https://developer.android.com/reference/android/provider/Settings#ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
     private const string ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION = "android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION";
 
+    [SerializeField] private UnityEvent PermissionsGranted;
 
     public async void Start()
     {
@@ -33,9 +35,15 @@ public class PermissionsManager : MonoBehaviour
     public async Task CheckPermissions()
     {
         logger.DebugLog("Checking permissions");
-        if (await EnsurePermissions())
+#if UNITY_EDITOR
+        var permissionGranted = !debugDenyPermission;
+#else
+        var permissionGranted = await EnsurePermissions();
+#endif
+        if (permissionGranted)
         {
-            ContinueToMainScene();
+            PermissionsGranted?.Invoke();
+            //ContinueToMainScene();
         }
         else
         {

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 3389833317811319252}
   - component: {fileID: 6975175712245934739}
   - component: {fileID: 1301293737896475336}
-  - component: {fileID: 9187041946545926816}
   m_Layer: 0
   m_Name: divider
   m_TagString: Untagged
@@ -77,62 +76,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &9187041946545926816
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 86739141228247951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.019607825, g: 0.5022908, b: 0.78431374, a: 1}
-    m_PressedColor: {r: 1, g: 0, b: 0, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 0
-  m_TargetGraphic: {fileID: 1301293737896475336}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
-        m_MethodName: StartDownloadingLatest
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &166769681677803078
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,8 +333,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
+      - m_Target: {fileID: 287202588508738705}
+        m_TargetAssemblyTypeName: CustomFileManager, Assembly-CSharp
         m_MethodName: StartMoveDownloadedFiles
         m_Mode: 1
         m_Arguments:
@@ -962,7 +905,7 @@ MonoBehaviour:
   Label: {fileID: 5057765903363145837}
   SiteFilterName: Master
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &8846365594227716944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1082,7 +1025,7 @@ MonoBehaviour:
   Label: {fileID: 8489952155333791498}
   SiteFilterName: Expert
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &3265016639991647846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1337,7 +1280,7 @@ MonoBehaviour:
   Label: {fileID: 3451870199471890603}
   SiteFilterName: Normal
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &5528494850627491722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1516,7 +1459,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 5429377102869206265}
         m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
         m_MethodName: FixMapTimestamps
         m_Mode: 1
@@ -1726,7 +1669,7 @@ MonoBehaviour:
   Label: {fileID: 3350160532881241923}
   SiteFilterName: Hard
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &8321028173716279364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1981,7 +1924,7 @@ MonoBehaviour:
   Label: {fileID: 7267432353889036110}
   SiteFilterName: Custom
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &5236305671463179588
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2777,7 +2720,7 @@ MonoBehaviour:
   Label: {fileID: 2432116973904235526}
   SiteFilterName: Easy
   downloadFilters: {fileID: 9218390427614116185}
-  displayManager: {fileID: 0}
+  displayManager: {fileID: 6773800126905789088}
 --- !u!114 &9174553860188267759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2994,7 +2937,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 3811221993635812278}
         m_TargetAssemblyTypeName: SynthLauncher, Assembly-CSharp
         m_MethodName: LaunchSynthRiders
         m_Mode: 1
@@ -3018,6 +2961,8 @@ GameObject:
   - component: {fileID: 7872235850559705746}
   - component: {fileID: 4470960957039565747}
   - component: {fileID: 7483653398912571044}
+  - component: {fileID: 638524444294495847}
+  - component: {fileID: 7424456559859765946}
   m_Layer: 0
   m_Name: MainCanvas
   m_TagString: Untagged
@@ -3037,6 +2982,7 @@ RectTransform:
   m_LocalScale: {x: 4, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5453960891707391543}
   - {fileID: 2194685608506759451}
   - {fileID: 7510676949469706641}
   m_Father: {fileID: 0}
@@ -3111,6 +3057,32 @@ MonoBehaviour:
     m_Bits: 4294967295
   pointer: {fileID: 0}
   sortOrder: 0
+--- !u!114 &638524444294495847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430844648462146237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9c415f320f5d754e9e85ca6e7b71cd9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _panelName: MainCanvas
+  canvasGroup: {fileID: 7424456559859765946}
+--- !u!225 &7424456559859765946
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6430844648462146237}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &7047909333308441735
 GameObject:
   m_ObjectHideFlags: 0
@@ -3381,6 +3353,104 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &7109398886115449045
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5453960891707391543}
+  - component: {fileID: 6773800126905789088}
+  - component: {fileID: 3811221993635812278}
+  - component: {fileID: 287202588508738705}
+  - component: {fileID: 5429377102869206265}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: GameController
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5453960891707391543
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7109398886115449045}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.042724997, y: -0.5830333, z: -4.8999996}
+  m_LocalScale: {x: 0.25, y: 0.33333334, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8999204219072832006}
+  m_RootOrder: -1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6773800126905789088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7109398886115449045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521567f9a0551c649b192ad9948f8ccb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  VersionText: {fileID: 6694948727184666205}
+  LastFetchText: {fileID: 8323199204349665596}
+  FetchMapsButton: {fileID: 1004813590981962696}
+  FetchMapsButtonText: {fileID: 6384408651172361337}
+  DownloadFilters: {fileID: 9218390427614116185}
+  FixTimestampsButton: {fileID: 1764527938192308165}
+  MoveDownloadsButton: {fileID: 8528566793730894595}
+  logger: {fileID: 0}
+--- !u!114 &3811221993635812278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7109398886115449045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e332d4501ad787469e15b96f8a4a7fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logger: {fileID: 0}
+--- !u!114 &287202588508738705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7109398886115449045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0076cf5baa3bd1e4ea97ad78df45428b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayManager: {fileID: 6773800126905789088}
+  logger: {fileID: 0}
+--- !u!114 &5429377102869206265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7109398886115449045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 184b9611c88a7f342b00676de7ebe8bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  displayManager: {fileID: 6773800126905789088}
+  logger: {fileID: 0}
+  customFileManager: {fileID: 287202588508738705}
+  downloadFilters: {fileID: 9218390427614116185}
 --- !u!1 &7233226911408624794
 GameObject:
   m_ObjectHideFlags: 0
@@ -3685,7 +3755,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 5429377102869206265}
         m_TargetAssemblyTypeName: DownloadManager, Assembly-CSharp
         m_MethodName: StartDownloading
         m_Mode: 1

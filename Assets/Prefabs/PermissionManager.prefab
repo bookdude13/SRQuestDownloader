@@ -915,6 +915,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5014606526765550294}
   - component: {fileID: 3473712114231568492}
+  - component: {fileID: 7599911930463935743}
   m_Layer: 0
   m_Name: PermissionManager
   m_TagString: Untagged
@@ -936,7 +937,7 @@ Transform:
   m_Children:
   - {fileID: 2469621838088484099}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &3473712114231568492
 MonoBehaviour:
@@ -952,6 +953,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   logger: {fileID: 0}
   permissionDialog: {fileID: 7273170124646057192}
+  debugDenyPermission: 0
+  PermissionsGranted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &7599911930463935743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5360089906800104554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9c415f320f5d754e9e85ca6e7b71cd9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _panelName: PermissionManager
+  canvasGroup: {fileID: 9141742407761820632}
 --- !u!1 &7714972048643286797
 GameObject:
   m_ObjectHideFlags: 0
@@ -1381,6 +1400,7 @@ GameObject:
   - component: {fileID: 6183113246730756203}
   - component: {fileID: 7129572916843915055}
   - component: {fileID: 7273170124646057192}
+  - component: {fileID: 9141742407761820632}
   m_Layer: 0
   m_Name: PermissionDialog
   m_TagString: Untagged
@@ -1490,3 +1510,15 @@ MonoBehaviour:
   - {fileID: 8516794690602686993}
   - {fileID: 5324294027122851720}
   logger: {fileID: 0}
+--- !u!225 &9141742407761820632
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9178732307991409270}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0

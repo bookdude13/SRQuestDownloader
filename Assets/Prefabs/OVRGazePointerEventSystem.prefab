@@ -63,7 +63,7 @@ MonoBehaviour:
   m_SendPointerHoverToParent: 1
   rayTransform: {fileID: 0}
   m_Cursor: {fileID: 6936096492558088971}
-  joyPadClickButton: 2097153
+  joyPadClickButton: 2105345
   gazeClickKey: 32
   performSphereCastForGazepointer: 1
   useRightStickScroll: 1
@@ -278,7 +278,7 @@ MonoBehaviour:
   externalSurfaceWidth: 0
   externalSurfaceHeight: 0
   compositionDepth: 0
-  noDepthBufferTesting: 0
+  noDepthBufferTesting: 1
   layerTextureFormat: 0
   currentOverlayShape: 0
   textures:
@@ -426,7 +426,7 @@ MonoBehaviour:
       m_Flags: 0
     m_Reference: {fileID: 0}
   m_ActivateAction:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
       m_Name: Activate
       m_Type: 0
@@ -436,7 +436,8 @@ MonoBehaviour:
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
-    m_Reference: {fileID: 0}
+    m_Reference: {fileID: 3126232910624779927, guid: 3c91ffeaec9630142b5c649ab5a2729c,
+      type: 3}
   m_ActivateActionValue:
     m_UseReference: 0
     m_Action:

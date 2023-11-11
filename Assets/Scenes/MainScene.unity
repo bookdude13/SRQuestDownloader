@@ -610,6 +610,11 @@ PrefabInstance:
       propertyPath: displayManager
       value: 
       objectReference: {fileID: 332003134}
+    - target: {fileID: 4470960957039565747, guid: 54ab3b45463c69645bc3b46fb0fb97a1,
+        type: 3}
+      propertyPath: m_PresetInfoIsWorld
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5161606133326208120, guid: 54ab3b45463c69645bc3b46fb0fb97a1,
         type: 3}
       propertyPath: displayManager

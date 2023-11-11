@@ -37,6 +37,28 @@
                     "action": "SelectUI",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "85b57697-f2a6-4b1d-9d73-32efad657393",
+                    "path": "<OculusTouchController>/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "SelectUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9c117f8b-d9f0-416a-9643-a5f7d6c10d93",
+                    "path": "<OculusTouchController>/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "XR",
+                    "action": "SelectUI",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

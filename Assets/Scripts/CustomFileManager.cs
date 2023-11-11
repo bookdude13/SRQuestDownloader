@@ -20,7 +20,12 @@ public class CustomFileManager : MonoBehaviour
     public readonly static string synthCustomContentDir = "/sdcard/SynthRidersUC/";
 
     private readonly string MAP_EXTENSION = ".synth";
-    private readonly HashSet<string> STAGE_EXTENSIONS = new HashSet<string>() { ".stagequest", ".spinstagequest" };
+    private readonly HashSet<string> STAGE_EXTENSIONS = new()
+    {
+        ".stagequest", // Old quest stages, still used for Q1 and Pico
+        ".spinstagequest", // Old quest spin stages, still used for Q1 and Pico
+        ".stagedroid" // Q2+ stage files, used for both spin and non-spin stages
+    };
     private readonly string PLAYLIST_EXTENSION = ".playlist";
 
 
@@ -307,9 +312,21 @@ public class CustomFileManager : MonoBehaviour
     {
         try
         {
-            logger.DebugLog($"Migrating playlists");
             var oldPlaylistDir = Path.Join(synthCustomContentDir, "Playlist");
+            if (!Directory.Exists(oldPlaylistDir))
+            {
+                logger.DebugLog("No old playlist directory found; skipping migration");
+                return;
+            }
+
             var newPlaylistDir = Path.Join(synthCustomContentDir, "CustomPlaylists");
+            if (!Directory.Exists(newPlaylistDir))
+            {
+                logger.DebugLog("New playlist directory not found; did you run the game and accept permissions for custom content?");
+                return;
+            }
+
+            logger.DebugLog($"Migrating playlists");
             foreach (var file in Directory.GetFiles(oldPlaylistDir))
             {
                 if (Path.GetExtension(file) != PLAYLIST_EXTENSION)

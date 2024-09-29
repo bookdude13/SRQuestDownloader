@@ -218,7 +218,7 @@ PlayerSettings:
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
-    Android: com.bookdude13.SRQuestDownloader
+    Android: com.bookdude13.srquestdownloader
     Standalone: com.DefaultCompany.com.unity.template.vr
   buildNumber:
     Standalone: 0

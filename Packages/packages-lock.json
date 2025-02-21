@@ -1,13 +1,5 @@
 {
   "dependencies": {
-    "com.kybernetik.inspector-gadgets": {
-      "version": "file:com.kybernetik.inspector-gadgets",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.modules.imgui": "1.0.0"
-      }
-    },
     "com.unity.ai.navigation": {
       "version": "1.1.5",
       "depth": 0,

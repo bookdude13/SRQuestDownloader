@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.4337214, g: 0.43084264, b: 0.4328991, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -275,13 +274,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 585914844}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 1.0750911, y: 0.6187066, z: -1.8188953}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
@@ -369,13 +368,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.10663678, y: 0.033659644, z: -0.003612034, w: 0.9937216}
   m_LocalPosition: {x: -100, y: 71, z: -45.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 12.25, y: 3.88, z: 0}
 --- !u!114 &971741926 stripped
 MonoBehaviour:
@@ -413,6 +412,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1549386100}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.38780928, y: 0.56217194, z: 21.420546}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -421,7 +421,6 @@ Transform:
   - {fileID: 4148176348671228300}
   - {fileID: 1648886567}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1549386102
 MonoBehaviour:
@@ -607,6 +606,11 @@ PrefabInstance:
       propertyPath: logger
       value: 
       objectReference: {fileID: 1590471909}
+    - target: {fileID: 7483653398912571044, guid: 54ab3b45463c69645bc3b46fb0fb97a1,
+        type: 3}
+      propertyPath: m_BlockingMask.m_Bits
+      value: 4294967295
+      objectReference: {fileID: 0}
     - target: {fileID: 7872235850559705746, guid: 54ab3b45463c69645bc3b46fb0fb97a1,
         type: 3}
       propertyPath: m_Camera
@@ -934,6 +938,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: PermissionManager
       objectReference: {fileID: 0}
+    - target: {fileID: 5360089906800104554, guid: ab61f7c4c1e926443983b2e5e49663e9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5655054355868043124, guid: ab61f7c4c1e926443983b2e5e49663e9,
         type: 3}
       propertyPath: m_Camera
@@ -967,3 +976,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9c415f320f5d754e9e85ca6e7b71cd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 705507995}
+  - {fileID: 585914847}
+  - {fileID: 172759746}
+  - {fileID: 1590471908}
+  - {fileID: 1549386101}

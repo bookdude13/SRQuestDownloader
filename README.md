@@ -58,8 +58,9 @@ This copies custom maps, stages, and playlists from the Quest Download/ folder t
 4. Run SRQuestDownloader and select "Move From Downloads" to move and/or extract all necessary files to the matching Synth Riders directories.
 
 ## Fix Map Timestamps
-This fetches all map metadata from synthriderz.com and updates the data modified for any local map files to the Z published_at time. This fixes in-game sorting by timestamp.
+This updates the data modified for any local map files to the Z published_at time. This fixes in-game sorting by timestamp. It uses a local mapping first, then tries to fetch all map metadata from synthriderz.com and update that way.
 
+Note - you may need to reimport songs in Synth Riders after applying this fix, to update the in-game database.
 
 ## Play Synth Riders
 Closes this application and launches the Synth Riders application. I haven't tested what happens if Synth Riders isn't installed, but I doubt that'll be a common problem :P

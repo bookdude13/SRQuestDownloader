@@ -4,20 +4,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using com.cyborgAssets.inspectorButtonPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SRTimestampLib;
+using SRTimestampLib.Models;
 
 public class DownloadManager : MonoBehaviour
 {
     public DisplayManager displayManager;
     public SRLogHandler logger;
-    public CustomFileManager customFileManager;
+    public CustomFileManagerBehaviour customFileManager;
     public DownloadFilters downloadFilters;
     private bool isDownloading = false;
-    private readonly int GET_PAGE_TIMEOUT_SEC = 30;
+    private readonly int GET_PAGE_TIMEOUT_SEC = 3; // In case the site is down, fail quick
     private readonly int GET_MAP_TIMEOUT_SEC = 60;
     private readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
 
@@ -53,22 +56,37 @@ public class DownloadManager : MonoBehaviour
 
     /// Update local map timestamps to match the Z site published_at,
     /// to allow for correct sorting by timestamp in-game
+    [ProPlayButton]
     public async void FixMapTimestamps() {
         logger.DebugLog("Fixing map timestamp...");
 
         displayManager.DisableActions("Fixing Timestamps...");
 
+        // First, try to fix timestamps with local file
+        logger.DebugLog("  Trying local fixes...");
+        await customFileManager.ApplyLocalTimestampMappings();
+
+        // Use Z for any others
+        logger.DebugLog("  Trying Z fixes...");
+        await FixMapsUsingZ();
+
+        logger.DebugLog("Done");
+        displayManager.EnableActions();
+    }
+
+    private async Task FixMapsUsingZ()
+    {
         try {
             var sinceTime = DateTime.UnixEpoch;
             var selectedDifficulties = downloadFilters.GetAllDifficulties();
 
             logger.DebugLog("Getting all maps from Z");
-            List<MapItem> mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+            var mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
 
             logger.DebugLog("Fixing local files...");
             var notFoundLocally = 0;
             foreach (var mapFromZ in mapsFromZ) {
-                MapZMetadata localMetadata = customFileManager.db.GetFromHash(mapFromZ.hash);
+                var localMetadata = customFileManager.GetFromHash(mapFromZ.hash);
                 if (localMetadata == null) {
                     notFoundLocally++;
                     // logger.DebugLog($"Map id {mapFromZ.id} not found locally, skipping");
@@ -79,7 +97,7 @@ public class DownloadManager : MonoBehaviour
                         logger.DebugLog($"Couldn't parse published_at timestamp {mapFromZ.published_at}");
                     } else {
                         logger.DebugLog($"Setting timestamp for {fileName} to {publishedAtUtc}");
-                        FileUtils.SetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), logger);
+                        FileUtils.TrySetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), logger);
                     }
                 }
             }
@@ -89,8 +107,6 @@ public class DownloadManager : MonoBehaviour
         } catch (Exception e) {
             logger.ErrorLog("Failed to fix timestamps: " + e.Message);
         }
-
-        displayManager.EnableActions();
     }
 
     private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime, List<string> selectedDifficulties) {
@@ -143,7 +159,7 @@ public class DownloadManager : MonoBehaviour
                     }
 
                     logger.DebugLog("Saving current state to db...");
-                    await customFileManager.db.Save();
+                    await customFileManager.Save();
 
                     logger.DebugLog("Resuming...");
                 }
@@ -157,7 +173,7 @@ public class DownloadManager : MonoBehaviour
             logger.DebugLog("Done waiting");
 
             logger.DebugLog("Trying to save database...");
-            await customFileManager.db.Save();
+            await customFileManager.Save();
             logger.DebugLog("Done");
         }
         catch (System.Exception e) {

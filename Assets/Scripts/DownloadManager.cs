@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SRTimestampLib;
 using SRTimestampLib.Models;
+using Unity.VisualScripting.Dependencies.Sqlite;
 
 public class DownloadManager : MonoBehaviour
 {
@@ -70,17 +71,40 @@ public class DownloadManager : MonoBehaviour
         logger.DebugLog("  Trying Z fixes...");
         await FixMapsUsingZ();
         
-        // TODO Finally, update SynthDB so the next load is correct and doesn't need a slow reload of customs
-        // logger.DebugLog("  TODO Refreshing SynthDB timestamps...");
-        // await UpdateSynthDBTimestamps();
+        // Finally, update SynthDB so the next load is correct and doesn't need a slow reload of customs
+        logger.DebugLog("  Refreshing SynthDB timestamps...");
+        await UpdateSynthDBTimestamps();
 
         logger.DebugLog("Done");
         displayManager.EnableActions();
     }
 
+    /// <summary>
+    /// Updates SynthDB with current file timestamps
+    /// </summary>
     private async Task UpdateSynthDBTimestamps()
     {
         // TODO
+        var synthDbPath = FileUtils.SynthDBPath;
+
+        using var conn = new SQLiteConnection($"{synthDbPath}", SQLiteOpenFlags.ReadWrite);
+        
+        var cmdUpdateTime = conn.CreateCommand("UPDATE TracksCache SET date_created = @dateCreated WHERE leaderboard_hash = @leaderboardHash");
+
+        var localMaps = customFileManager.AllMaps;
+        foreach (var map in localMaps)
+        {
+            var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
+            int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
+                
+            cmdUpdateTime.Bind("@dateCreated", secSinceEpoch);
+            cmdUpdateTime.Bind("@leaderboardHash", map.hash);
+            var rowsUpdated = cmdUpdateTime.ExecuteNonQuery();
+            if (rowsUpdated > 0)
+            {
+                logger.DebugLog($"Updated SynthDB timestamp for {Path.GetFileNameWithoutExtension(map.FilePath)} to {secSinceEpoch}");
+            }
+        }
     }
 
     private async Task FixMapsUsingZ()

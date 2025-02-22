@@ -69,9 +69,18 @@ public class DownloadManager : MonoBehaviour
         // Use Z for any others
         logger.DebugLog("  Trying Z fixes...");
         await FixMapsUsingZ();
+        
+        // TODO Finally, update SynthDB so the next load is correct and doesn't need a slow reload of customs
+        // logger.DebugLog("  TODO Refreshing SynthDB timestamps...");
+        // await UpdateSynthDBTimestamps();
 
         logger.DebugLog("Done");
         displayManager.EnableActions();
+    }
+
+    private async Task UpdateSynthDBTimestamps()
+    {
+        // TODO
     }
 
     private async Task FixMapsUsingZ()

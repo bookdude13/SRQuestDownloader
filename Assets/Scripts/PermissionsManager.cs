@@ -38,6 +38,7 @@ public class PermissionsManager : MonoBehaviour
         logger.DebugLog("Checking permissions");
 #if UNITY_EDITOR
         var permissionGranted = !debugDenyPermission;
+        await Task.CompletedTask;
 #else
         var permissionGranted = await EnsurePermissions();
 #endif

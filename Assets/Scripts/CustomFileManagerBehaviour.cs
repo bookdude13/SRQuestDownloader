@@ -74,9 +74,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     }
 
     /// Parses the map at the given path and adds it to the collection
-    public async void AddLocalMap(string mapPath, MapItem mapFromZ) {
-        _customFileManager.AddLocalMap(mapPath, mapFromZ);
-    }
+    public async Task AddLocalMap(string mapPath, MapItem mapFromZ) => await _customFileManager.AddLocalMap(mapPath, mapFromZ);
 
     public async Task Save() => await _customFileManager.db.Save();
 

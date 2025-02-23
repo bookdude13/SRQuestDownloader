@@ -70,7 +70,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
         logger.DebugLog($"{localMappings.MapTimestamps.Count} mappings found");
         
         // Apply saved timestamp values to all local files
-        _customFileManager.ApplyLocalMappings(localMappings);
+        await _customFileManager.ApplyLocalMappings(localMappings);
     }
 
     /// Parses the map at the given path and adds it to the collection

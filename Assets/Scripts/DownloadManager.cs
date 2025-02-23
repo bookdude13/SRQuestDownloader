@@ -68,12 +68,12 @@ public class DownloadManager : MonoBehaviour
         await customFileManager.ApplyLocalTimestampMappings();
 
         // Use Z for any others
-        logger.DebugLog("  Trying Z fixes...");
-        await FixMapsUsingZ();
+        logger.DebugLog("  Z check disabled for now. Not trying Z fixes.");
+        // await FixMapsUsingZ();
         
         // Finally, update SynthDB so the next load is correct and doesn't need a slow reload of customs
         logger.DebugLog("  Refreshing SynthDB timestamps...");
-        UpdateSynthDBTimestamps();
+        await UpdateSynthDBTimestamps();
 
         logger.DebugLog("Done");
         displayManager.EnableActions();
@@ -83,96 +83,56 @@ public class DownloadManager : MonoBehaviour
     /// Updates SynthDB with current file timestamps
     /// </summary>
     [ProPlayButton]
-    private void UpdateSynthDBTimestamps()
+    private async Task UpdateSynthDBTimestamps()
     {
         // TODO
         var synthDbPath = FileUtils.SynthDBPath;
 
+        SQLiteConnection conn;
+        SQLiteCommand cmdUpdateTime;
         try
         {
-            // await using var conn = new SQLiteConnection($"Data Source={synthDbPath}");
-            //
-            // // See https://github.com/IvanMurzak/Unity-EFCore-SQLite/blob/master/Assets/_PackageRoot/Runtime/Startup.cs
-            // // SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-            //
-            // conn.Open();
-            //
-            // // Prepare the update command
-            // var cmdUpdateTime = conn.CreateCommand();
-            // cmdUpdateTime.CommandText =
-            //     @"UPDATE TracksCache SET date_created = @dateCreated WHERE leaderboard_hash = @leaderboardHash";
-            // var dateCreatedParam = new SQLiteParameter("@dateCreated", DbType.Int32, 0);
-            // var hashParam = new SQLiteParameter("@leaderboardHash", DbType.String, 64);
-            // cmdUpdateTime.Parameters.Add(dateCreatedParam);
-            // cmdUpdateTime.Parameters.Add(hashParam);
-            // cmdUpdateTime.Prepare();
-            //
-            // var localMaps = customFileManager.AllMaps;
-            // foreach (var map in localMaps)
-            // {
-            //     var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
-            //     int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
-            //
-            //     cmdUpdateTime.Parameters[0].Value = secSinceEpoch;
-            //     cmdUpdateTime.Parameters[1].Value = map.hash;
-            //     var rowsUpdated = cmdUpdateTime.ExecuteNonQuery();
-            //     // if (rowsUpdated <= 0)
-            //     // {
-            //     //     logger.ErrorLog($"Failed to update map timestamp for {Path.GetFileNameWithoutExtension(map.FilePath)} ({map.hash})");
-            //     //     // logger.DebugLog($"Updated SynthDB timestamp for {Path.GetFileNameWithoutExtension(map.FilePath)} to {secSinceEpoch}");
-            //     // }
-            // }
-            
-            // -----
-            
-            var conn = new SQLiteConnection($"{synthDbPath}");
-            var cmdUpdateTime = conn.CreateCommand(@"UPDATE TracksCache SET date_created = @date_created WHERE leaderboard_hash = @leaderboard_hash");
-            
-            var localMaps = customFileManager.AllMaps;
-            foreach (var map in localMaps)
-            {
-                var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
-                int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
-                
-                cmdUpdateTime.Bind("@date_created", secSinceEpoch);
-                cmdUpdateTime.Bind("@leaderboard_hash", map.hash);
-
-                cmdUpdateTime.ExecuteNonQuery();
-            }
-            
-            // await using var conn = new SqliteConnection($"Data Source={synthDbPath}");
-            // SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-            // conn.Open();
-            //
-            // // Prepare the update command
-            // var cmdUpdateTime = conn.CreateCommand();
-            // cmdUpdateTime.CommandText =
-            //     @"UPDATE TracksCache SET date_created = @dateCreated WHERE leaderboard_hash = @leaderboardHash";
-            // var dateCreatedParam = new SqliteParameter("@dateCreated", SqliteType.Integer, 0);
-            // var hashParam = new SqliteParameter("@leaderboardHash", SqliteType.Text, 64);
-            // cmdUpdateTime.Parameters.Add(dateCreatedParam);
-            // cmdUpdateTime.Parameters.Add(hashParam);
-            // cmdUpdateTime.Prepare();
-            //
-            // var localMaps = customFileManager.AllMaps;
-            // foreach (var map in localMaps)
-            // {
-            //     var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
-            //     int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
-            //
-            //     cmdUpdateTime.Parameters[0].Value = secSinceEpoch;
-            //     cmdUpdateTime.Parameters[1].Value = map.hash;
-            //     var rowsUpdated = cmdUpdateTime.ExecuteNonQuery();
-            //     // if (rowsUpdated <= 0)
-            //     // {
-            //     //     logger.ErrorLog($"Failed to update map timestamp for {Path.GetFileNameWithoutExtension(map.FilePath)} ({map.hash})");
-            //     //     // logger.DebugLog($"Updated SynthDB timestamp for {Path.GetFileNameWithoutExtension(map.FilePath)} to {secSinceEpoch}");
-            //     // }
-            // }
+            conn = new SQLiteConnection($"{synthDbPath}", SQLiteOpenFlags.ReadWrite);
+            cmdUpdateTime = conn.CreateCommand(
+                    @"UPDATE TracksCache SET date_created = @date_created WHERE leaderboard_hash = @leaderboard_hash");
         }
         catch (Exception e)
         {
             logger.ErrorLog(e.Message);
+            return;
+        }
+
+        var localMaps = customFileManager.AllMaps;
+        var numProcessed = 0;
+        foreach (var map in localMaps)
+        {
+            var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
+            int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
+
+            try
+            {
+                cmdUpdateTime.Bind("@date_created", secSinceEpoch);
+                cmdUpdateTime.Bind("@leaderboard_hash", map.hash);
+
+                cmdUpdateTime.ExecuteNonQuery();
+                numProcessed++;
+            }
+            catch (Exception e)
+            {
+                logger.ErrorLog(e.Message);
+            }
+
+            // Don't hog the main thread
+            if (numProcessed % 20 == 0)
+            {
+                await Task.Yield();
+            }
+            
+            // Let the user know work is being done
+            if (numProcessed % 100 == 0)
+            {
+                logger.DebugLog($"  {numProcessed} / {localMaps.Count} processed");
+            }
         }
     }
 
@@ -185,11 +145,14 @@ public class DownloadManager : MonoBehaviour
             logger.DebugLog("Getting all maps from Z");
             var mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
 
+            await Task.Yield();
+
             logger.DebugLog("Fixing local files...");
             var notFoundLocally = 0;
+            var numProcessed = 0;
             foreach (var mapFromZ in mapsFromZ) {
                 var localMetadata = customFileManager.GetFromHash(mapFromZ.hash);
-                if (localMetadata == null) {
+                if (localMetadata == null || string.IsNullOrEmpty(localMetadata.FilePath)) {
                     notFoundLocally++;
                     // logger.DebugLog($"Map id {mapFromZ.id} not found locally, skipping");
                 } else {
@@ -200,6 +163,20 @@ public class DownloadManager : MonoBehaviour
                     } else {
                         logger.DebugLog($"Setting timestamp for {fileName} to {publishedAtUtc}");
                         FileUtils.TrySetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), logger);
+                    }
+
+                    numProcessed++;
+                    
+                    // Don't hog main thread
+                    if (numProcessed % 20 == 0)
+                    {
+                        await Task.Yield();
+                    }
+                    
+                    // Let user know work is happening
+                    if (numProcessed % 100 == 0)
+                    {
+                        logger.DebugLog($"  Processed {numProcessed}/{mapsFromZ.Count}");
                     }
                 }
             }

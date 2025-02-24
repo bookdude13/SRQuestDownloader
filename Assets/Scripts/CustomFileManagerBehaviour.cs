@@ -78,7 +78,8 @@ public class CustomFileManagerBehaviour : MonoBehaviour
 
     public async Task Save() => await _customFileManager.db.Save();
 
-    public List<MapZMetadata> AllMaps => _customFileManager.db.GetLocalMapsCopy();
+    public async Task UpdateSynthDBTimestamps() =>
+        await _customFileManager.UpdateSynthDBTimestamps(_customFileManager.db.GetLocalMapsCopy());
 
     [CanBeNull] public MapZMetadata GetFromHash(string hash) => _customFileManager.db.GetFromHash(hash);
 

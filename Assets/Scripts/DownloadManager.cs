@@ -83,58 +83,7 @@ public class DownloadManager : MonoBehaviour
     /// Updates SynthDB with current file timestamps
     /// </summary>
     [ProPlayButton]
-    private async Task UpdateSynthDBTimestamps()
-    {
-        // TODO
-        var synthDbPath = FileUtils.SynthDBPath;
-
-        SQLiteConnection conn;
-        SQLiteCommand cmdUpdateTime;
-        try
-        {
-            conn = new SQLiteConnection($"{synthDbPath}", SQLiteOpenFlags.ReadWrite);
-            cmdUpdateTime = conn.CreateCommand(
-                    @"UPDATE TracksCache SET date_created = @date_created WHERE leaderboard_hash = @leaderboard_hash");
-        }
-        catch (Exception e)
-        {
-            logger.ErrorLog(e.Message);
-            return;
-        }
-
-        var localMaps = customFileManager.AllMaps;
-        var numProcessed = 0;
-        foreach (var map in localMaps)
-        {
-            var lastWriteTimeUtc = File.GetLastWriteTimeUtc(map.FilePath);
-            int secSinceEpoch = (int)(lastWriteTimeUtc - DateTime.UnixEpoch).TotalSeconds;
-
-            try
-            {
-                cmdUpdateTime.Bind("@date_created", secSinceEpoch);
-                cmdUpdateTime.Bind("@leaderboard_hash", map.hash);
-
-                cmdUpdateTime.ExecuteNonQuery();
-                numProcessed++;
-            }
-            catch (Exception e)
-            {
-                logger.ErrorLog(e.Message);
-            }
-
-            // Don't hog the main thread
-            if (numProcessed % 20 == 0)
-            {
-                await Task.Yield();
-            }
-            
-            // Let the user know work is being done
-            if (numProcessed % 100 == 0)
-            {
-                logger.DebugLog($"  {numProcessed} / {localMaps.Count} processed");
-            }
-        }
-    }
+    private async Task UpdateSynthDBTimestamps() => await customFileManager.UpdateSynthDBTimestamps();
 
     private async Task FixMapsUsingZ()
     {

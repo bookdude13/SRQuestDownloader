@@ -94,6 +94,10 @@ Feel free to extend this as you want. Open issues for bugs and feature requests,
 
 Logs are output to `/sdcard/Android/data/com.bookdude13.srquestdownloader/files/logs/`. Logs older than 7 days are removed at startup.
 
+This project uses SRTimestampManager to handle fixing timestamps (since that project also has console apps to do the fixing).
+
+The SynthDB is updated as well, using the sqlite-net library (https://github.com/praeclarum/sqlite-net).
+
 ---
 ### Disclaimer
 This mod is not affiliated with Synth Riders or Kluge Interactive. Use at your own risk.

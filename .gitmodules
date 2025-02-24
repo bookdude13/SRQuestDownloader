@@ -1,0 +1,3 @@
+[submodule "Assets/SRTimestampManager"]
+	path = Assets/SRTimestampManager
+	url = ../../bookdude13/SRTimestampManager

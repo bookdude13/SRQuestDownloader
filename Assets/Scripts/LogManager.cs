@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 using System.IO;
+using SRTimestampLib;
 
 public class LogManager : SRLogHandler
 {
@@ -44,6 +45,8 @@ public class LogManager : SRLogHandler
         if (debugBuffer.Count >= 20) {
             debugBuffer.RemoveAt(0);
         }
+
+        Debug.Log(message);
         debugBuffer.Add(message);
         DebugText.SetText(String.Join("\n", debugBuffer));
 

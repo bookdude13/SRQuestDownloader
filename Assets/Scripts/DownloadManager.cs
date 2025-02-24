@@ -1,23 +1,27 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using com.cyborgAssets.inspectorButtonPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using TMPro;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SQLite;
+using SRTimestampLib;
+using SRTimestampLib.Models;
 
 public class DownloadManager : MonoBehaviour
 {
     public DisplayManager displayManager;
     public SRLogHandler logger;
-    public CustomFileManager customFileManager;
+    public CustomFileManagerBehaviour customFileManager;
     public DownloadFilters downloadFilters;
     private bool isDownloading = false;
-    private readonly int GET_PAGE_TIMEOUT_SEC = 30;
+    private readonly int GET_PAGE_TIMEOUT_SEC = 3; // In case the site is down, fail quick
     private readonly int GET_MAP_TIMEOUT_SEC = 60;
     private readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
 
@@ -53,23 +57,51 @@ public class DownloadManager : MonoBehaviour
 
     /// Update local map timestamps to match the Z site published_at,
     /// to allow for correct sorting by timestamp in-game
+    [ProPlayButton]
     public async void FixMapTimestamps() {
         logger.DebugLog("Fixing map timestamp...");
 
         displayManager.DisableActions("Fixing Timestamps...");
 
+        // First, try to fix timestamps with local file
+        logger.DebugLog("  Trying local fixes...");
+        await customFileManager.ApplyLocalTimestampMappings();
+
+        // Use Z for any others
+        logger.DebugLog("  Z check disabled for now. Not trying Z fixes.");
+        // await FixMapsUsingZ();
+        
+        // Finally, update SynthDB so the next load is correct and doesn't need a slow reload of customs
+        logger.DebugLog("  Refreshing SynthDB timestamps...");
+        await UpdateSynthDBTimestamps();
+
+        logger.DebugLog("Done");
+        displayManager.EnableActions();
+    }
+
+    /// <summary>
+    /// Updates SynthDB with current file timestamps
+    /// </summary>
+    [ProPlayButton]
+    private async Task UpdateSynthDBTimestamps() => await customFileManager.UpdateSynthDBTimestamps();
+
+    private async Task FixMapsUsingZ()
+    {
         try {
             var sinceTime = DateTime.UnixEpoch;
             var selectedDifficulties = downloadFilters.GetAllDifficulties();
 
             logger.DebugLog("Getting all maps from Z");
-            List<MapItem> mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+            var mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+
+            await Task.Yield();
 
             logger.DebugLog("Fixing local files...");
             var notFoundLocally = 0;
+            var numProcessed = 0;
             foreach (var mapFromZ in mapsFromZ) {
-                MapZMetadata localMetadata = customFileManager.db.GetFromHash(mapFromZ.hash);
-                if (localMetadata == null) {
+                var localMetadata = customFileManager.GetFromHash(mapFromZ.hash);
+                if (localMetadata == null || string.IsNullOrEmpty(localMetadata.FilePath)) {
                     notFoundLocally++;
                     // logger.DebugLog($"Map id {mapFromZ.id} not found locally, skipping");
                 } else {
@@ -79,7 +111,21 @@ public class DownloadManager : MonoBehaviour
                         logger.DebugLog($"Couldn't parse published_at timestamp {mapFromZ.published_at}");
                     } else {
                         logger.DebugLog($"Setting timestamp for {fileName} to {publishedAtUtc}");
-                        FileUtils.SetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), logger);
+                        FileUtils.TrySetDateModifiedUtc(localMetadata.FilePath, publishedAtUtc.GetValueOrDefault(), logger);
+                    }
+
+                    numProcessed++;
+                    
+                    // Don't hog main thread
+                    if (numProcessed % 20 == 0)
+                    {
+                        await Task.Yield();
+                    }
+                    
+                    // Let user know work is happening
+                    if (numProcessed % 100 == 0)
+                    {
+                        logger.DebugLog($"  Processed {numProcessed}/{mapsFromZ.Count}");
                     }
                 }
             }
@@ -89,8 +135,6 @@ public class DownloadManager : MonoBehaviour
         } catch (Exception e) {
             logger.ErrorLog("Failed to fix timestamps: " + e.Message);
         }
-
-        displayManager.EnableActions();
     }
 
     private async Task<bool> DownloadSongsSinceTime(DateTimeOffset sinceTime, List<string> selectedDifficulties) {
@@ -143,7 +187,7 @@ public class DownloadManager : MonoBehaviour
                     }
 
                     logger.DebugLog("Saving current state to db...");
-                    await customFileManager.db.Save();
+                    await customFileManager.Save();
 
                     logger.DebugLog("Resuming...");
                 }
@@ -157,7 +201,7 @@ public class DownloadManager : MonoBehaviour
             logger.DebugLog("Done waiting");
 
             logger.DebugLog("Trying to save database...");
-            await customFileManager.db.Save();
+            await customFileManager.Save();
             logger.DebugLog("Done");
         }
         catch (System.Exception e) {
@@ -209,7 +253,7 @@ public class DownloadManager : MonoBehaviour
             var finalPath = customFileManager.MoveCustomSong(destPath, map.GetPublishedAtUtc());
 
             logger.DebugLog("Success!");
-            customFileManager.AddLocalMap(finalPath, map);
+            await customFileManager.AddLocalMap(finalPath, map);
 
             return true;
         }

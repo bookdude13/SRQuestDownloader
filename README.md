@@ -58,8 +58,9 @@ This copies custom maps, stages, and playlists from the Quest Download/ folder t
 4. Run SRQuestDownloader and select "Move From Downloads" to move and/or extract all necessary files to the matching Synth Riders directories.
 
 ## Fix Map Timestamps
-This fetches all map metadata from synthriderz.com and updates the data modified for any local map files to the Z published_at time. This fixes in-game sorting by timestamp.
+This updates the data modified for any local map files to the Z published_at time. This fixes in-game sorting by timestamp. It uses a local mapping first, then tries to fetch all map metadata from synthriderz.com and update that way.
 
+Note - you may need to reimport songs in Synth Riders after applying this fix, to update the in-game database.
 
 ## Play Synth Riders
 Closes this application and launches the Synth Riders application. I haven't tested what happens if Synth Riders isn't installed, but I doubt that'll be a common problem :P
@@ -92,6 +93,10 @@ This does the following:
 Feel free to extend this as you want. Open issues for bugs and feature requests, and open PRs if you implement some of those yourself. I will try to respond in a timely manner :)
 
 Logs are output to `/sdcard/Android/data/com.bookdude13.srquestdownloader/files/logs/`. Logs older than 7 days are removed at startup.
+
+This project uses SRTimestampManager to handle fixing timestamps (since that project also has console apps to do the fixing).
+
+The SynthDB is updated as well, using the sqlite-net library (https://github.com/praeclarum/sqlite-net).
 
 ---
 ### Disclaimer

@@ -33,16 +33,11 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     private readonly string PLAYLIST_EXTENSION = ".playlist";
 
 
-    private async void Awake()
+    public async Task Initialize()
     {
         displayManager.DisableActions("Loading Local Maps...");
         _customFileManager = new CustomFileManager(logger);
         await _customFileManager.Initialize();
-    }
-
-    private void OnEnable()
-    {
-        displayManager.EnableActions();
         
         // Immediately migrate old playlist files
         MigratePlaylistsForMixedRealityUpdate();
@@ -340,4 +335,9 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     /// Refreshes local database metadata. Parses all missing custom map files.
     /// This saves the updated database.
     private async Task RefreshLocalDatabase() => await _customFileManager.RefreshLocalDatabase();
+
+    public void SetLastDownloadedTime(DateTime lastDownloadedTime) =>
+        _customFileManager.db.SetLastDownloadedTime(lastDownloadedTime);
+    
+    public DateTime GetLastDownloadedTime() => _customFileManager.db.GetLastDownloadedTime();
 }

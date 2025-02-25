@@ -34,11 +34,17 @@ public class DownloadManager : MonoBehaviour
 
     private async void OnEnable()
     {
+        await customFileManager.Initialize();
+        
+        displayManager.DisableActions("Initializing maps source...");
+
         logger.DebugLog("Setting up custom map source...");
         await _customMapRepo.Initialize();
         
         // Start with a clean download dir, so everything can be moved over via the torrent itself
         FileUtils.EmptyDirectory(FileUtils.TorrentDownloadDirectory);
+        
+        displayManager.EnableActions();
     }
 
     public async void StartDownloading() {
@@ -54,14 +60,17 @@ public class DownloadManager : MonoBehaviour
             var nowUtc = DateTime.UtcNow;
             var cutoffTimeUtc = downloadFilters.GetDateCutoffFromCurrentSelection(nowUtc);
             logger.DebugLog($"Using cutoff time (local) {cutoffTimeUtc.ToLocalTime()}");
+            
+            // TODO get difficulty info somewhere. For now, use all difficulties
             var difficultySelections = downloadFilters.GetDifficultiesEnabled();
             // logger.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
             var diffSet = new HashSet<string>(difficultySelections);
             // var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
-            // TODO get difficulty info somewhere
+            
             var downloadedMaps = await _customMapRepo.DownloadMaps(null, cutoffTimeUtc);
             if (downloadedMaps.Count > 0) {
                 Preferences.SetLastDownloadedTime(nowUtc);
+                customFileManager.SetLastDownloadedTime(nowUtc);
                 displayManager.UpdateLastFetchTime();
             }
         } catch (Exception e) {
@@ -104,6 +113,7 @@ public class DownloadManager : MonoBehaviour
     [ProPlayButton]
     private async Task UpdateSynthDBTimestamps() => await customFileManager.UpdateSynthDBTimestamps();
 
+#region Old Z Site
     private async Task FixMapsUsingZ()
     {
         try {
@@ -407,4 +417,5 @@ public class DownloadManager : MonoBehaviour
 
         return maps;
     }
+#endregion
 }

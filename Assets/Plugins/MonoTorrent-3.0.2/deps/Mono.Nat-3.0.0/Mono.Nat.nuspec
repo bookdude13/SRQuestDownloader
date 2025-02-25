@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Mono.Nat</id>
+    <version>3.0.0</version>
+    <authors>Alan McGovern, Ben Motmans, Nicholas Terry</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <projectUrl>https://github.com/mono/Mono.Nat</projectUrl>
+    <description>Mono.Nat is a modern and full-featured library which supports both the UPNP (Universal Plug and Play) and NAT-PMP (Port Mapping Protocol) protocols for port forwarding.</description>
+    <copyright>Alan McGovern, Ben Motmans, Nicholas Terry</copyright>
+    <tags>upnp natpmp nat-pmp port fowarding</tags>
+    <repository type="git" url="https://github.com/mono/Mono.Nat" branch="master" commit="04754b1e5f139559736c41bf23c1752564d178d9" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+      <group targetFramework=".NETStandard2.1" />
+    </dependencies>
+  </metadata>
+</package>

@@ -1,0 +1,694 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ReusableTasks</name>
+    </assembly>
+    <members>
+        <member name="T:ReusableTasks.AsyncProducerConsumerQueue`1">
+            <summary>
+            This is a zero allocation collection which implements the Producer-Consumer pattern. It
+            supports a single producer and single consumer. The capacity can be bounded, or unbounded.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:ReusableTasks.AsyncProducerConsumerQueue`1.Capacity">
+            <summary>
+            The maximum number of work items which can be queued. A value of zero means there is
+            no limit.
+            </summary>
+        </member>
+        <member name="P:ReusableTasks.AsyncProducerConsumerQueue`1.Count">
+            <summary>
+            The number of items in the queue.
+            </summary>
+        </member>
+        <member name="P:ReusableTasks.AsyncProducerConsumerQueue`1.IsAddingCompleted">
+            <summary>
+            Returns true if no more items will be added to the queue.
+            </summary>
+        </member>
+        <member name="P:ReusableTasks.AsyncProducerConsumerQueue`1.IsBounded">
+            <summary>
+            Returns true if the capacity  is greater than zero, indicating a limited number of
+            items can be queued at any one time.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.#ctor(System.Int32)">
+            <summary>
+            Creates a new instance of <see cref="T:ReusableTasks.AsyncProducerConsumerQueue`1"/>.
+            </summary>
+            <param name="capacity">A value of 0 means the collection has an unbounded size. A value greater
+            than zero represents the maximum number of items which can be queued.</param>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.CompleteAdding">
+            <summary>
+            Sets <see cref="P:ReusableTasks.AsyncProducerConsumerQueue`1.IsAddingCompleted"/> to true and interrupts any pending <see cref="M:ReusableTasks.AsyncProducerConsumerQueue`1.DequeueAsync"/>
+            calls if the collection is already empty. Future calls to <see cref="M:ReusableTasks.AsyncProducerConsumerQueue`1.EnqueueAsync(`0)"/> will throw
+            an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.DequeueAsync">
+            <summary>
+            If an item has already been enqueued, then it will be dequeued and returned synchronously. Otherwise an
+            item must be enqueued before this will return.
+            will be added.
+            /// </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.DequeueAsync(System.Threading.CancellationToken)">
+            <summary>
+            If an item has already been enqueued, then it will be dequeued and returned synchronously. Otherwise an
+            item must be enqueued before this will return.
+            will be added.
+            /// </summary>
+            <param name="token">The token used to cancel the pending dequeue.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.EnqueueAsync(`0)">
+            <summary>
+            The new item will be enqueued synchronously if the number of items already
+            enqueued is less than the capacity. Otherwise an item must be dequeued before the new item
+            will be added.
+            /// </summary>
+            <param name="value">The item to enqueue</param>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.AsyncProducerConsumerQueue`1.EnqueueAsync(`0,System.Threading.CancellationToken)">
+            <summary>
+            The new item will be enqueued synchronously if the number of items already
+            enqueued is less than the capacity. Otherwise an item must be dequeued before the new item
+            will be added.
+            /// </summary>
+            <param name="value">The item to enqueue</param>
+            <param name="token">The token used to cancel the pending enqueue.</param>
+            <returns></returns>
+        </member>
+        <member name="T:ReusableTasks.InvalidTaskReuseException">
+            <summary>
+            This exception is thrown whenever a <see cref="T:ReusableTasks.ReusableTask"/> has been mis-used. This can happen
+            if the same instance is awaited twice.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.InvalidTaskReuseException.#ctor">
+            <summary>
+            Creates a new instance of <see cref="T:ReusableTasks.InvalidTaskReuseException"/> with the given message
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.InvalidTaskReuseException.#ctor(System.String)">
+            <summary>
+            Creates a new instance of <see cref="T:ReusableTasks.InvalidTaskReuseException"/> with the given message
+            </summary>
+            <param name="message">The message describing the failure</param>
+        </member>
+        <member name="T:ReusableTasks.ReusableTask">
+            <summary>
+            This is equivalent to a <see cref="T:System.Threading.Tasks.Task"/>, except the underlying <see cref="T:ReusableTasks.ReusableTask"/>
+            instance is cached and re-used. If an async method using <see cref="T:ReusableTasks.ReusableTask"/> is declared,
+            the returned <see cref="T:ReusableTasks.ReusableTask"/> must be awaited exactly once. If the <see cref="T:ReusableTasks.ReusableTask"/>
+            is not awaited then it will not be returned to the cache for reuse. There are no other negative effects.
+            If an instance of <see cref="T:ReusableTasks.ReusableTask"/> is awaited twice, then it will corrupt the cache and
+            future behaviour will be indeterminate.
+            </summary>
+        </member>
+        <member name="P:ReusableTasks.ReusableTask.CompletedTask">
+            <summary>
+            Gets an instance of <see cref="T:ReusableTasks.ReusableTask"/> which has already been completed. It is safe
+            to await this instance multiple times.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask.FromResult``1(``0)">
+            <summary>
+            Returns a completed task representing the result
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ReusableTasks.ReusableTask.IsCompleted">
+            <summary>
+            Returns true if the task has completed.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask.AsTask">
+            <summary>
+            Converts this <see cref="T:ReusableTasks.ReusableTask"/> into a standard
+            <see cref="T:System.Threading.Tasks.Task"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask.ConfigureAwait(System.Boolean)">
+            <summary>
+            Configures the awaiter used by this <see cref="T:ReusableTasks.ReusableTask`1"/>
+            </summary>
+            <param name="continueOnCapturedContext">If <see langword="true"/> then the continuation will
+            be invoked on the captured <see cref="T:System.Threading.SynchronizationContext"/>, otherwise
+            the continuation will be executed on a <see cref="T:System.Threading.ThreadPool"/> thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask.GetAwaiter">
+            <summary>
+            Gets the awaiter used to await this <see cref="T:ReusableTasks.ReusableTask"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ReusableTasks.ReusableTaskCompletionSource`1">
+            <summary>
+            This is equivalent to a <see cref="T:System.Threading.Tasks.TaskCompletionSource`1"/> where the underlying <see cref="T:ReusableTasks.ReusableTask"/>
+            instance is reset after it has been awaited and completed.
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:ReusableTasks.ReusableTaskCompletionSource`1.Task">
+            <summary>
+            The <see cref="T:ReusableTasks.ReusableTask`1"/> controlled by this <see cref="T:ReusableTasks.ReusableTaskCompletionSource`1"/>.
+            Once the Task has been both completed and awaited it will be reset to it's initial state, allowing
+            this <see cref="T:ReusableTasks.ReusableTaskCompletionSource`1"/> instance to be reused.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.#ctor">
+            <summary>
+            Instantiates a new <see cref="T:ReusableTasks.ReusableTaskCompletionSource`1"/>.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.#ctor(System.Boolean)">
+            <summary>
+            The <see cref="T:ReusableTasks.ReusableTask`1"/> controlled by this <see cref="T:ReusableTasks.ReusableTaskCompletionSource`1"/>.
+            Once the Task has been both completed and awaited it will be reset to it's initial state, allowing
+            this <see cref="T:ReusableTasks.ReusableTaskCompletionSource`1"/> instance to be reused.
+            </summary>
+            <param name="forceAsynchronousContinuation">True if the continuation should always be invoked asynchronously.</param>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.SetCanceled">
+            <summary>
+            Moves <see cref="P:ReusableTasks.ReusableTaskCompletionSource`1.Task"/> to the Canceled state. 
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.SetException(System.Exception)">
+            <summary>
+            Moves <see cref="P:ReusableTasks.ReusableTaskCompletionSource`1.Task"/> to the Faulted state using the specified exception. 
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.SetResult(`0)">
+            <summary>
+            Moves <see cref="P:ReusableTasks.ReusableTaskCompletionSource`1.Task"/> to the Faulted state using the specified exception. 
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.TrySetCanceled">
+            <summary>
+            Returns true if the underlying task is successfully marked as canceled. Returns false
+            if the underlying task has already completed.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.TrySetException(System.Exception)">
+            <summary>
+            Returns true if the underlying task is successfully marked as faulted. Returns false
+            if the underlying task has already completed.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTaskCompletionSource`1.TrySetResult(`0)">
+            <summary>
+            Returns true if the underlying task is successfully marked as completed. Returns false
+            if the underlying task has already completed.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:ReusableTasks.ReusableTask`1">
+            <summary>
+            This is equivalent to a <see cref="T:System.Threading.Tasks.Task`1"/>, except the underlying <see cref="T:ReusableTasks.ReusableTask`1"/>
+            instance is cached and re-used. If an async method using <see cref="T:ReusableTasks.ReusableTask`1"/> is declared,
+            the returned <see cref="T:ReusableTasks.ReusableTask`1"/> must be awaited exactly once. If the <see cref="T:ReusableTasks.ReusableTask`1"/>
+            is not awaited then it will not be returned to the cache for reuse. There are no other negative effects.
+            If an instance of <see cref="T:ReusableTasks.ReusableTask`1"/> is awaited twice, then it will corrupt the cache and
+            future behaviour will be indeterminate.
+            </summary>
+        </member>
+        <member name="P:ReusableTasks.ReusableTask`1.IsCompleted">
+            <summary>
+            Returns true if the task has completed.
+            </summary>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask`1.AsTask">
+            <summary>
+            Converts this <see cref="T:ReusableTasks.ReusableTask"/> into a standard
+            <see cref="T:System.Threading.Tasks.Task"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask`1.ConfigureAwait(System.Boolean)">
+            <summary>
+            Configures the awaiter used by this <see cref="T:ReusableTasks.ReusableTask`1"/>
+            </summary>
+            <param name="continueOnCapturedContext">If <see langword="true"/> then the continuation will
+            be invoked on the captured <see cref="T:System.Threading.SynchronizationContext"/>, otherwise
+            the continuation will be executed on a <see cref="T:System.Threading.ThreadPool"/> thread.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ReusableTasks.ReusableTask`1.GetAwaiter">
+            <summary>
+            Gets the awaiter used to await this <see cref="T:ReusableTasks.ReusableTask`1"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncMethodBuilderAttribute">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.AsyncMethodBuilderAttribute.BuilderType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncMethodBuilderAttribute.#ctor(System.Type)">
+            <summary>
+            
+            </summary>
+            <param name="type"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.AsyncVoidMethodBuilder">
+            <summary>
+            A reimplementation of the built-in AsyncVoidMethodBuilder which is backed by
+            <see cref="T:ReusableTasks.ReusableTask"/> instead of <see cref="T:System.Threading.Tasks.Task"/>.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Create">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetException(System.Exception)">
+            <summary>
+            
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetResult">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>
+            
+            </summary>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Start``1(``0@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.AsyncVoidMethodBuilder.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.EmptyStruct">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ResultHolder.HasValue">
+            <summary>
+            The compiler/runtime uses this to check whether or not the awaitable can
+            be completed synchronously or asynchronously. If this property is checked
+            and 'false' is returned, then 'INotifyCompletion.OnCompleted' will be invoked
+            with the delegate we need to asynchronously invoke. If it returns true then
+            the compiler/runtime will go ahead and invoke the continuation itself.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ResultHolder`1">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ReusableTaskAwaiter">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskAwaiter.IsCompleted">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter.#ctor(System.Int32,System.Runtime.CompilerServices.ResultHolder{System.Runtime.CompilerServices.EmptyStruct})">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="resultHolder"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter.GetResult">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter.OnCompleted(System.Action)">
+            <summary>
+            
+            </summary>
+            <param name="continuation"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ReusableTaskAwaiter`1">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskAwaiter`1.IsCompleted">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter`1.#ctor(System.Int32,System.Runtime.CompilerServices.ResultHolder{`0},`0@)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="resultHolder"></param>
+            <param name="result"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter`1.GetResult">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskAwaiter`1.OnCompleted(System.Action)">
+            <summary>
+            
+            </summary>
+            <param name="continuation"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.CacheCount">
+            <summary>
+            The number of <see cref="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder"/> instances currently in the cache.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.ClearCache">
+            <summary>
+            Removes all <see cref="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder"/> instances from the cache.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.MaximumCacheSize">
+            <summary>
+            The maximum number of instances to store in the cache. Defaults to <see langword="512"/>
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.Create">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.Release(System.Runtime.CompilerServices.ResultHolder{System.Runtime.CompilerServices.EmptyStruct})">
+            <summary>
+            Places the instance into the cache for re-use. This is invoked implicitly when a <see cref="T:ReusableTasks.ReusableTask"/> is awaited.
+            </summary>
+            <param name="result">The instance to place in the cache</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.Task">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.SetException(System.Exception)">
+            <summary>
+            
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.SetResult">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.Start``1(``0@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>
+            
+            </summary>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilderCore">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilderCore.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilderCore.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.CacheCount">
+            <summary>
+            The number of <see cref="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1"/> instances currently in the cache.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.ClearCache">
+            <summary>
+            Removes all <see cref="T:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1"/> instances from the cache.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.Create">
+            <summary>
+            Not intended to be used directly. This method returns an object from the cache, or instantiates
+            and returns a new object if the cache is empty.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.Release(System.Runtime.CompilerServices.ResultHolder{`0})">
+            <summary>
+            Places the instance into the cache for re-use. This is invoked implicitly when a <see cref="T:ReusableTasks.ReusableTask`1"/> is awaited.
+            </summary>
+            <param name="result">The instance to place in the cache</param>
+        </member>
+        <member name="P:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.Task">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.SetException(System.Exception)">
+            <summary>
+            
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.SetResult(`0)">
+            <summary>
+            
+            </summary>
+            <param name="result"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.AwaitOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.AwaitUnsafeOnCompleted``2(``0@,``1@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TAwaiter"></typeparam>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="awaiter"></param>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.Start``1(``0@)">
+            <summary>
+            
+            </summary>
+            <typeparam name="TStateMachine"></typeparam>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.ReusableTaskMethodBuilder`1.SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine)">
+            <summary>
+            
+            </summary>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.StateMachineCache">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.StateMachineCache`1">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.StateMachineCache`1.GetOrCreate">
+            <summary>
+            Retrieves an instance of <see cref="T:System.Runtime.CompilerServices.StateMachineCache`1"/> from the cache. If the cache is
+            empty, a new instance will be created and returned. You must invoke either <see cref="M:System.Runtime.CompilerServices.StateMachineCache`1.SetStateMachine(`0@)"/> or
+            <see cref="M:System.Runtime.CompilerServices.StateMachineCache`1.SetStateMachine(`0@)"/>. This will ensure the
+            <see cref="T:System.Runtime.CompilerServices.StateMachineCache`1"/> instance is added back into the cache as soon as the
+            async continuation has been executed.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.StateMachineCache`1.SetStateMachine(`0@)">
+            <summary>
+            
+            </summary>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:System.Runtime.CompilerServices.StateMachineWithActionCache`1">
+            <summary>
+            Not intended to be used directly.
+            </summary>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.StateMachineWithActionCache`1.GetOrCreate">
+            <summary>
+            Retrieves an instance of <see cref="T:System.Runtime.CompilerServices.StateMachineWithActionCache`1"/> from the cache. If the cache is
+            <see cref="T:System.Runtime.CompilerServices.StateMachineWithActionCache`1"/> instance is added back into the cache as soon as the
+            async continuation has been executed.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:System.Runtime.CompilerServices.StateMachineWithActionCache`1.SetStateMachine(`0@)">
+            <summary>
+            
+            </summary>
+            <param name="stateMachine"></param>
+        </member>
+        <member name="T:ThisAssembly">
+            <summary>Provides access to the current assembly information.</summary>
+        </member>
+        <member name="T:ThisAssembly.Git">
+            <summary>Provides access to the git information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirty">
+            <summary>IsDirty: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirtyString">
+            <summary>IsDirtyString: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.RepositoryUrl">
+            <summary>Repository URL: git@github.com:alanmcgovern/reusabletasks</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Branch">
+            <summary>Branch: master</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commit">
+            <summary>Commit: 3c0c192</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Sha">
+            <summary>Sha: 3c0c1929375b3b3ddc97ff84fe6c59b024f2e85b</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.CommitDate">
+            <summary>Commit date: 2024-06-29T22:49:21+01:00</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commits">
+            <summary>Commits on top of base version: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Tag">
+            <summary>Tag: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseTag">
+            <summary>Base tag: </summary>
+        </member>
+        <member name="T:ThisAssembly.Git.BaseVersion">
+            <summary>Provides access to the base version information used to determine the <see cref="T:ThisAssembly.Git.SemVer" />.</summary>      
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Major">
+            <summary>Major: 4</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Patch">
+            <summary>Patch: 0</summary>
+        </member>
+        <member name="T:ThisAssembly.Git.SemVer">
+            <summary>Provides access to SemVer information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Major">
+            <summary>Major: 4</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Patch">
+            <summary>Patch: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Label">
+            <summary>Label: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.DashLabel">
+            <summary>Label with dash prefix: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Source">
+            <summary>Source: File</summary>
+        </member>
+    </members>
+</doc>

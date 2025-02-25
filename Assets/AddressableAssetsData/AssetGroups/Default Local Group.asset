@@ -13,11 +13,9 @@ MonoBehaviour:
   m_Name: Default Local Group
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
-  m_Data:
-    m_SerializedData: []
   m_GUID: 8be3edaf115f98e44a523c7a1288e3e9
   m_SerializeEntries:
-  - m_GUID: 60d2b983076b7d447afab94895e24a4b
+  - m_GUID: 9d708bda9e1645b408732ff4afee16ab
     m_Address: sr_timestamp_mapping
     m_ReadOnly: 0
     m_SerializedLabels: []

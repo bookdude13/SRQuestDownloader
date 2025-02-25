@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MonoTorrent.Connections</name>
+    </assembly>
+    <members>
+        <member name="F:MonoTorrent.Connections.Peer.LocalPeerDiscovery.MulticastAddressV4">
+            <summary>
+            The IPAddress and port of the IPV4 multicast group.
+            </summary>
+        </member>
+        <member name="F:MonoTorrent.Connections.Peer.LocalPeerDiscovery.Random">
+            <summary>
+            Used to generate a unique identifier for this client instance.
+            </summary>
+        </member>
+        <member name="E:MonoTorrent.Connections.Peer.LocalPeerDiscovery.PeerFound">
+            <summary>
+            This asynchronous event is raised whenever a peer is discovered.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.Connections.Peer.LocalPeerDiscovery.BaseSearchString">
+            <summary>
+            When we send Announce we should embed the current port used to listen for incoming connections.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.Connections.Peer.LocalPeerDiscovery.Cookie">
+            <summary>
+            A random identifier used to detect our own Announces so we can ignore them.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.Connections.Peer.LocalPeerDiscovery.PendingAnnounces">
+            <summary>
+            We glob together announces so that we don't iterate the network interfaces too frequently.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.Connections.Peer.LocalPeerDiscovery.ProcessingAnnounces">
+            <summary>
+            Set to true when we're processing the pending announce queue.
+            </summary>
+        </member>
+        <member name="M:MonoTorrent.Connections.Peer.LocalPeerDiscovery.Announce(MonoTorrent.InfoHash,System.Net.IPEndPoint)">
+            <summary>
+            Send an announce request for this InfoHash.
+            </summary>
+            <param name="infoHash"></param>
+            <param name="listeningPort"></param>
+            <returns></returns>
+        </member>
+        <member name="T:MonoTorrent.Connections.Peer.PeerConnectionListener">
+            <summary>
+            Accepts incoming connections and passes them off to the right TorrentManager
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.GitInfoHelper.ClientVersion">
+            <summary>
+            The current version of the client in the form "MO1234", which represents a version triplet of '1.2.34'.
+            </summary>
+        </member>
+        <member name="F:MonoTorrent.GitInfoHelper.Version">
+            <summary>
+            The full version of this library in the form 'A.B.C'.
+            'A' and 'B' are guaranteed to be 1 digit each. 'C' can be one or two digits.
+            </summary>
+        </member>
+        <member name="T:ThisAssembly">
+            <summary>Provides access to the current assembly information.</summary>
+        </member>
+        <member name="T:ThisAssembly.Git">
+            <summary>Provides access to the git information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirty">
+            <summary>IsDirty: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirtyString">
+            <summary>IsDirtyString: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.RepositoryUrl">
+            <summary>Repository URL: git@github.com:alanmcgovern/monotorrent</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Branch">
+            <summary>Branch: master</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commit">
+            <summary>Commit: e78faebd</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Sha">
+            <summary>Sha: e78faebd0aec117146cffccaaea987ab0629eec0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.CommitDate">
+            <summary>Commit date: 2024-08-04T11:51:08+01:00</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commits">
+            <summary>Commits on top of base version: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Tag">
+            <summary>Tag: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseTag">
+            <summary>Base tag: </summary>
+        </member>
+        <member name="T:ThisAssembly.Git.BaseVersion">
+            <summary>Provides access to the base version information used to determine the <see cref="T:ThisAssembly.Git.SemVer" />.</summary>      
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Major">
+            <summary>Major: 3</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Patch">
+            <summary>Patch: 2</summary>
+        </member>
+        <member name="T:ThisAssembly.Git.SemVer">
+            <summary>Provides access to SemVer information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Major">
+            <summary>Major: 3</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Patch">
+            <summary>Patch: 2</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Label">
+            <summary>Label: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.DashLabel">
+            <summary>Label with dash prefix: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Source">
+            <summary>Source: File</summary>
+        </member>
+    </members>
+</doc>

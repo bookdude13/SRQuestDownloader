@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MonoTorrent.PieceWriter</name>
+    </assembly>
+    <members>
+        <member name="P:MonoTorrent.PieceWriter.MemoryCache.CacheHits">
+            <summary>
+            The number of bytes which were read from the cache when fulfilling a Read request.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.PieceWriter.MemoryCache.CacheMisses">
+            <summary>
+            The number of bytes which could not be read from the cache when fulfilling a Read request.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.PieceWriter.MemoryCache.CacheUsed">
+            <summary>
+            The number of bytes currently used by the cache.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.PieceWriter.MemoryCache.CachedBlocks">
+            <summary>
+            The blocks which have been cached in memory
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.PieceWriter.MemoryCache.Capacity">
+            <summary>
+            The size of the in memory cache, in bytes.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.GitInfoHelper.ClientVersion">
+            <summary>
+            The current version of the client in the form "MO1234", which represents a version triplet of '1.2.34'.
+            </summary>
+        </member>
+        <member name="F:MonoTorrent.GitInfoHelper.Version">
+            <summary>
+            The full version of this library in the form 'A.B.C'.
+            'A' and 'B' are guaranteed to be 1 digit each. 'C' can be one or two digits.
+            </summary>
+        </member>
+        <member name="P:MonoTorrent.ReusableSemaphore.Count">
+            <summary>
+            The maximum concurrency. A value of 0 means unlimited.
+            </summary>
+        </member>
+        <member name="M:MonoTorrent.TorrentFileExtensions.FindFileByOffset(System.Collections.Generic.IList{MonoTorrent.ITorrentManagerFile},System.Int64)">
+            <summary>
+            Used for tests
+            </summary>
+            <param name="files"></param>
+            <param name="offset"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MonoTorrent.TorrentFileExtensions.FindFileByPieceIndex(System.Collections.Generic.IList{MonoTorrent.ITorrentManagerFile},System.Int32)">
+            <summary>
+            Used for tests
+            </summary>
+            <param name="files"></param>
+            <param name="pieceIndex"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ThisAssembly">
+            <summary>Provides access to the current assembly information.</summary>
+        </member>
+        <member name="T:ThisAssembly.Git">
+            <summary>Provides access to the git information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirty">
+            <summary>IsDirty: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.IsDirtyString">
+            <summary>IsDirtyString: false</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.RepositoryUrl">
+            <summary>Repository URL: git@github.com:alanmcgovern/monotorrent</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Branch">
+            <summary>Branch: master</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commit">
+            <summary>Commit: e78faebd</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Sha">
+            <summary>Sha: e78faebd0aec117146cffccaaea987ab0629eec0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.CommitDate">
+            <summary>Commit date: 2024-08-04T11:51:08+01:00</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Commits">
+            <summary>Commits on top of base version: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.Tag">
+            <summary>Tag: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseTag">
+            <summary>Base tag: </summary>
+        </member>
+        <member name="T:ThisAssembly.Git.BaseVersion">
+            <summary>Provides access to the base version information used to determine the <see cref="T:ThisAssembly.Git.SemVer" />.</summary>      
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Major">
+            <summary>Major: 3</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.BaseVersion.Patch">
+            <summary>Patch: 2</summary>
+        </member>
+        <member name="T:ThisAssembly.Git.SemVer">
+            <summary>Provides access to SemVer information for the current assembly.</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Major">
+            <summary>Major: 3</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Minor">
+            <summary>Minor: 0</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Patch">
+            <summary>Patch: 2</summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Label">
+            <summary>Label: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.DashLabel">
+            <summary>Label with dash prefix: </summary>
+        </member>
+        <member name="F:ThisAssembly.Git.SemVer.Source">
+            <summary>Source: File</summary>
+        </member>
+    </members>
+</doc>

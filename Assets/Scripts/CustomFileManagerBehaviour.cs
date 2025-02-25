@@ -33,15 +33,15 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     private readonly string PLAYLIST_EXTENSION = ".playlist";
 
 
-    private void Awake()
+    private async void Awake()
     {
         displayManager.DisableActions("Loading Local Maps...");
         _customFileManager = new CustomFileManager(logger);
+        await _customFileManager.Initialize();
     }
 
-    private async void Start()
+    private void OnEnable()
     {
-        await _customFileManager.Initialize();
         displayManager.EnableActions();
         
         // Immediately migrate old playlist files
@@ -79,7 +79,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public async Task Save() => await _customFileManager.db.Save();
 
     public async Task UpdateSynthDBTimestamps() =>
-        await _customFileManager.UpdateSynthDBTimestamps(_customFileManager.db.GetLocalMapsCopy());
+        await _customFileManager.UpdateSynthDBTimestamps();
 
     [CanBeNull] public MapZMetadata GetFromHash(string hash) => _customFileManager.db.GetFromHash(hash);
 

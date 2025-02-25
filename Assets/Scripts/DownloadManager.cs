@@ -11,6 +11,7 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SQLite;
+using SRCustomLib;
 using SRTimestampLib;
 using SRTimestampLib.Models;
 
@@ -24,6 +25,21 @@ public class DownloadManager : MonoBehaviour
     private readonly int GET_PAGE_TIMEOUT_SEC = 3; // In case the site is down, fail quick
     private readonly int GET_MAP_TIMEOUT_SEC = 60;
     private readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
+    private CustomMapRepoTorrent _customMapRepo;
+
+    private void Awake()
+    {
+        _customMapRepo = new CustomMapRepoTorrent(logger);
+    }
+
+    private async void OnEnable()
+    {
+        logger.DebugLog("Setting up custom map source...");
+        await _customMapRepo.Initialize();
+        
+        // Start with a clean download dir, so everything can be moved over via the torrent itself
+        FileUtils.EmptyDirectory(FileUtils.TorrentDownloadDirectory);
+    }
 
     public async void StartDownloading() {
         if (isDownloading) {
@@ -39,9 +55,12 @@ public class DownloadManager : MonoBehaviour
             var cutoffTimeUtc = downloadFilters.GetDateCutoffFromCurrentSelection(nowUtc);
             logger.DebugLog($"Using cutoff time (local) {cutoffTimeUtc.ToLocalTime()}");
             var difficultySelections = downloadFilters.GetDifficultiesEnabled();
-            logger.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
-            var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
-            if (success) {
+            // logger.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
+            var diffSet = new HashSet<string>(difficultySelections);
+            // var success = await DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
+            // TODO get difficulty info somewhere
+            var downloadedMaps = await _customMapRepo.DownloadMaps(null, cutoffTimeUtc);
+            if (downloadedMaps.Count > 0) {
                 Preferences.SetLastDownloadedTime(nowUtc);
                 displayManager.UpdateLastFetchTime();
             }

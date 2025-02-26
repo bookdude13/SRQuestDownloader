@@ -15,6 +15,9 @@ using SRCustomLib;
 using SRTimestampLib;
 using SRTimestampLib.Models;
 
+/// <summary>
+/// Note - needs to start disabled, to avoid double-initialization
+/// </summary>
 public class DownloadManager : MonoBehaviour
 {
     public DisplayManager displayManager;

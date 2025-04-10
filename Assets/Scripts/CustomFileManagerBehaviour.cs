@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System;
+using com.cyborgAssets.inspectorButtonPro;
 using JetBrains.Annotations;
 using SRTimestampLib;
 using SRTimestampLib.Models;
@@ -19,9 +20,10 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public DisplayManager displayManager;
     public SRLogHandler logger;
     private CustomFileManager _customFileManager;
+    public CustomFileManager FileManager => _customFileManager ??= new CustomFileManager(logger);
 
     private bool isMovingFiles = false;
-    public readonly static string synthCustomContentDir = "/sdcard/SynthRidersUC/";
+    // public readonly static string synthCustomContentDir = "/sdcard/SynthRidersUC/";
 
     private readonly string MAP_EXTENSION = ".synth";
     private readonly HashSet<string> STAGE_EXTENSIONS = new()
@@ -36,13 +38,15 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public async Task Initialize()
     {
         displayManager.DisableActions("Loading Local Maps...");
-        _customFileManager = new CustomFileManager(logger);
-        await _customFileManager.Initialize();
+        await FileManager.Initialize(Application.exitCancellationToken);
         
         // Immediately migrate old playlist files
         MigratePlaylistsForMixedRealityUpdate();
     }
 
+    /// <summary>
+    /// Use locally cached timestamp info to fix map timestamps
+    /// </summary>
     public async Task ApplyLocalTimestampMappings()
     {
         // First, try to fix timestamps with local file
@@ -79,9 +83,10 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     [CanBeNull] public MapZMetadata GetFromHash(string hash) => _customFileManager.db.GetFromHash(hash);
 
     /// Useful for debugging. Clear out all custom songs
+    [ProPlayButton]
     public async void DeleteCustomSongs() {
         try {
-            var mapFiles = GetSynthriderzMapFiles(Path.Join(synthCustomContentDir, "CustomSongs"));
+            var mapFiles = GetSynthriderzMapFiles(FileUtils.CustomSongsPath);
             logger.DebugLog($"Deleting {mapFiles.Length} files...");
             foreach (var filePath in mapFiles) {
                 File.Delete(filePath);
@@ -212,7 +217,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
         logger.DebugLog($"{zipFilePaths.Length} zip files found");
         foreach (var filePath in zipFilePaths) {
             logger.DebugLog("Zip file: " + filePath);
-            yield return ExtractSynthriderzZip(filePath, synthCustomContentDir);
+            yield return ExtractSynthriderzZip(filePath, FileUtils.SynthCustomContentDir);
             try {
                 File.Delete(filePath);
             } catch (System.Exception e) {
@@ -259,7 +264,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public string MoveCustomSong(string filePath, DateTime? publishedAtUtc = null)
     {
         var mapFileName = Path.GetFileName(filePath);
-        var destPath = Path.Join(synthCustomContentDir, "CustomSongs", mapFileName);
+        var destPath = Path.Join(FileUtils.CustomSongsPath, mapFileName);
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
 
         if (publishedAtUtc.HasValue) {
@@ -274,7 +279,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     /// Returns the final path of the stage
     public string MoveCustomStage(string filePath)
     {
-        var destPath = Path.Join(synthCustomContentDir, "CustomStages", Path.GetFileName(filePath));
+        var destPath = Path.Join(FileUtils.CustomStagesPath, Path.GetFileName(filePath));
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;
     }
@@ -284,7 +289,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     /// TODO this doesn't check and remove different named playlists with the same identifier!
     public string MoveCustomPlaylist(string filePath)
     {
-        var destPath = Path.Join(synthCustomContentDir, "CustomPlaylists", Path.GetFileName(filePath));
+        var destPath = Path.Join(FileUtils.CustomPlaylistsPath, Path.GetFileName(filePath));
         // TODO actually check existing files for matching identifier, since the game can rename them!
         FileUtils.MoveFileOverwrite(filePath, destPath, logger);
         return destPath;
@@ -298,14 +303,14 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     {
         try
         {
-            var oldPlaylistDir = Path.Join(synthCustomContentDir, "Playlist");
+            var oldPlaylistDir = Path.Join(FileUtils.SynthCustomContentDir, "Playlist");
             if (!Directory.Exists(oldPlaylistDir))
             {
                 logger.DebugLog("No old playlist directory found; skipping migration");
                 return;
             }
 
-            var newPlaylistDir = Path.Join(synthCustomContentDir, "CustomPlaylists");
+            var newPlaylistDir = FileUtils.CustomPlaylistsPath;
             if (!Directory.Exists(newPlaylistDir))
             {
                 logger.DebugLog("New playlist directory not found; did you run the game and accept permissions for custom content?");
@@ -334,7 +339,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
 
     /// Refreshes local database metadata. Parses all missing custom map files.
     /// This saves the updated database.
-    private async Task RefreshLocalDatabase() => await _customFileManager.RefreshLocalDatabase();
+    private async Task RefreshLocalDatabase() => await _customFileManager.RefreshLocalDatabase(Application.exitCancellationToken);
 
     public void SetLastDownloadedTime(DateTime lastDownloadedTime) =>
         _customFileManager.db.SetLastDownloadedTime(lastDownloadedTime);

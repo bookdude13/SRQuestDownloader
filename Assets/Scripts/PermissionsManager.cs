@@ -120,7 +120,7 @@ public class PermissionsManager : MonoBehaviour
                 else
                 {
                     // Try to list out SR customs directory to check permission
-                    var testPath = Path.Combine(CustomFileManagerBehaviour.synthCustomContentDir, "permission_test");
+                    var testPath = Path.Combine(FileUtils.SynthCustomContentDir, "permission_test");
                     if (await FileUtils.WriteToFile(DateTime.Now.ToLongDateString(), testPath, logger)) {
                         logger.DebugLog("Permission not set as expected, but writing to customs directory works");
                         FileUtils.DeleteFile(testPath, logger);

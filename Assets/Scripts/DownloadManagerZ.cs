@@ -21,29 +21,40 @@ namespace Unity.Template.VR
         
         private bool isDownloading = false;
 
-        private readonly int GET_PAGE_TIMEOUT_SEC = 3; // In case the site is down, fail quick
-        private readonly int GET_MAP_TIMEOUT_SEC = 60;
-        private readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
+        protected readonly int GET_PAGE_TIMEOUT_SEC = 3; // In case the site is down, fail quick
+        protected readonly int GET_MAP_TIMEOUT_SEC = 60;
+        protected readonly int PARALLEL_DOWNLOAD_LIMIT = 10;
 
         public DownloadManagerZ(SRLogHandler logger, CustomFileManagerBehaviour customFileManager)
         {
             this.logger = logger;
             this.customFileManager = customFileManager;
         }
+
+        public virtual string GetDownloadUrl(MapItem map)
+        {
+            return "https://synthriderz.com" + map.download_url;
+        }
+
+        public virtual string MapPageUrl => "https://synthriderz.com/api/beatmaps";
         
-        public async Task FixMapsUsingZ(List<string> selectedDifficulties)
+        /// <summary>
+        /// Gets all map metadata from the site and uses that to fix local timestamps
+        /// </summary>
+        /// <param name="selectedDifficulties"></param>
+        /// <returns>False on failure, true on success (even if none were changed)</returns>
+        public async Task<bool> ApplyTimestampFixes(List<string> selectedDifficulties)
         {
             try {
                 var sinceTime = DateTime.UnixEpoch;
 
-                logger.DebugLog("Getting all maps from Z");
+                logger.DebugLog("Getting all map metadata from site");
                 var mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
-
                 await Task.Yield();
 
                 // Couldn't get Z data
                 if (mapsFromZ == null)
-                    return;
+                    return false;
 
                 logger.DebugLog("Fixing local files...");
                 var notFoundLocally = 0;
@@ -80,9 +91,12 @@ namespace Unity.Template.VR
                 }
 
                 logger.DebugLog($"{notFoundLocally} files from Z not found locally and skipped");
-                logger.DebugLog("Finished correcting timestamps");            
+                logger.DebugLog("Finished correcting timestamps");
+
+                return true;
             } catch (Exception e) {
                 logger.ErrorLog("Failed to fix timestamps: " + e.Message);
+                return false;
             }
         }
 
@@ -113,15 +127,15 @@ namespace Unity.Template.VR
             }
             
             try {
-                List<MapItem> mapsFromZ = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
-                if (mapsFromZ == null)
+                List<MapItem> mapsFromSite = await GetMapsSinceTimeForDifficulties(sinceTime, selectedDifficulties);
+                if (mapsFromSite == null)
                 {
                     return false;
                 }
                 
-                logger.DebugLog($"{mapsFromZ.Count} maps in Z found since given time for given difficulties.");
+                logger.DebugLog($"{mapsFromSite.Count} maps found since given time for given difficulties.");
 
-                var mapsToDownload = customFileManager.FilterOutExistingMaps(mapsFromZ);
+                var mapsToDownload = customFileManager.FilterOutExistingMaps(mapsFromSite);
                 logger.DebugLog($"{mapsToDownload.Count} new files to download...");
 
                 int count = 1;
@@ -172,10 +186,16 @@ namespace Unity.Template.VR
             return true;
         }
 
+        /// <summary>
         /// Downloads the given MapItem to the destination directory
         /// Returns true if successful, false if not
-        public async Task<bool> DownloadMap(MapItem map, string destDir) {
-            var fullUrl = "https://synthriderz.com" + map.download_url;
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="destDir"></param>
+        /// <returns></returns>
+        public async Task<bool> DownloadMap(MapItem map, string destDir)
+        {
+            var fullUrl = GetDownloadUrl(map);
             var destPath = Path.Join(destDir, map.filename);
 
             try {
@@ -214,6 +234,13 @@ namespace Unity.Template.VR
 
                 logger.DebugLog("Success!");
                 await customFileManager.AddLocalMap(finalPath, map);
+                
+                // Wait for all other operations to finish, then ensure the timestamp has been set
+                await Task.Yield();
+                if (map.GetPublishedAtUtc().HasValue)
+                {
+                    FileUtils.TrySetDateModifiedUtc(finalPath, map.GetPublishedAtUtc().GetValueOrDefault(), logger);
+                }
 
                 return true;
             }
@@ -224,8 +251,17 @@ namespace Unity.Template.VR
             return false;
         }
 
-        public async Task<MapPage> GetMapPage(int pageSize, int pageIndex, DateTimeOffset sinceTime, List<string> includedDifficulties) {
-            var apiEndpoint = "https://synthriderz.com/api/beatmaps";
+        /// <summary>
+        /// Gets one page of map metdata, with the given filters
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageIndex"></param>
+        /// <param name="sinceTime"></param>
+        /// <param name="includedDifficulties"></param>
+        /// <returns></returns>
+        public virtual async Task<MapPage> GetMapPage(int pageSize, int pageIndex, DateTimeOffset sinceTime, List<string> includedDifficulties)
+        {
+            var apiEndpoint = MapPageUrl;
             var sort = "published_at,DESC";
 
             JArray searchParameters = new JArray();

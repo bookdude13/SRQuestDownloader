@@ -31,25 +31,22 @@ public class DownloadManager : MonoBehaviour
     public bool UseMagnet = true;
 
     private bool _isDownloading = false;
-    private CustomMapRepoTorrent _customMapRepo;
+    private MapRepo _customMapRepo;
     private DownloadManagerZ _downloadManagerZ;
     private DownloadManagerSyn _downloadManagerSyn;
 
     private void Awake()
     {
-        _customMapRepo = new CustomMapRepoTorrent(logger);
-        _downloadManagerZ = new DownloadManagerZ(logger, customFileManager);
-        _downloadManagerSyn = new DownloadManagerSyn(logger, customFileManager);
+        _customMapRepo = new MapRepo(logger, UseZ, UseSyn, UseMagnet, customFileManager.FileManager);
+        _downloadManagerZ = new DownloadManagerZ(logger, customFileManager.FileManager);
+        _downloadManagerSyn = new DownloadManagerSyn(logger, customFileManager.FileManager);
     }
 
     private async void OnEnable()
     {
-        await customFileManager.Initialize();
-        
         displayManager.DisableActions("Initializing maps source...");
 
-        // Start with a clean download dir, so everything can be moved over via the torrent itself
-        FileUtils.EmptyDirectory(FileUtils.TorrentDownloadDirectory);
+        await _customMapRepo.Initialize();
         
         displayManager.EnableActions();
     }
@@ -72,7 +69,7 @@ public class DownloadManager : MonoBehaviour
             var difficultySelections = downloadFilters.GetDifficultiesEnabled();
             logger.DebugLog("Using difficulties " + String.Join(",", difficultySelections));
 
-            bool success = await TryDownloadWithFallbacks(nowUtc, cutoffTimeUtc, difficultySelections);
+            bool success = await _customMapRepo.TryDownloadWithFallbacks(cutoffTimeUtc, difficultySelections, Application.exitCancellationToken);
             if (success)
             {
                 Preferences.SetLastDownloadedTime(nowUtc);
@@ -91,52 +88,6 @@ public class DownloadManager : MonoBehaviour
 
         displayManager.EnableActions();
     }
-    
-    /// <summary>
-    /// Tries to download songs since the given cutoffTime, with any of the given difficulties, from various sources (fallbacks as necessary)
-    /// </summary>
-    /// <param name="nowUtc"></param>
-    /// <param name="cutoffTimeUtc"></param>
-    /// <param name="difficultySelections"></param>
-    /// <returns></returns>
-    private async Task<bool> TryDownloadWithFallbacks(DateTime nowUtc, DateTime cutoffTimeUtc, List<string> difficultySelections)
-    {
-        var success = false;
-
-        // First, try Z download
-        if (UseZ)
-        {
-            logger.DebugLog("Attempting to download from Z...");
-            success = await _downloadManagerZ.DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
-        }
-        
-        if (!success && UseSyn)
-        {
-            // Fallback on synplicity
-            logger.DebugLog("Attempting to download from Synplicity...");
-            return await _downloadManagerSyn.DownloadSongsSinceTime(cutoffTimeUtc, difficultySelections);
-        }
-
-        if (!success && UseMagnet)
-        {
-            // Fallback on torrent
-
-            // Ensure the torrent repo is initialized. Done here so it doesn't have to happen if we have a working site
-            if (!_customMapRepo.IsInitialized)
-            {
-                logger.DebugLog("Setting up custom map source...");
-                await _customMapRepo.Initialize();
-            }
-
-            logger.DebugLog("Attempting to download from torrent...");
-            // TODO get difficulty info to filter from torrent as well
-            var diffSet = new HashSet<string>(difficultySelections);
-            var downloadedMaps = await _customMapRepo.DownloadMaps(null, cutoffTimeUtc);
-            success = downloadedMaps != null;
-        }
-
-        return success;
-    }
 
     /// Update local map timestamps to match the Z site published_at,
     /// to allow for correct sorting by timestamp in-game
@@ -154,11 +105,11 @@ public class DownloadManager : MonoBehaviour
         // Use Z/Syn for any others
         List<string> difficultySelections = downloadFilters.GetDifficultiesEnabled();
         logger.DebugLog("  Getting online fixes...");
-        bool success = UseZ && await _downloadManagerZ.ApplyTimestampFixes(difficultySelections);
+        bool success = UseZ && await _downloadManagerZ.ApplyTimestampFixes(difficultySelections, Application.exitCancellationToken);
         if (!success)
         {
             logger.DebugLog("  Not getting fixes from Z. Trying synplicity...");
-            success = UseSyn && await _downloadManagerSyn.ApplyTimestampFixes(difficultySelections);
+            success = UseSyn && await _downloadManagerSyn.ApplyTimestampFixes(difficultySelections, Application.exitCancellationToken);
             if (!success)
             {
                 logger.ErrorLog("Failed to download timestamp fixes!");
@@ -181,6 +132,4 @@ public class DownloadManager : MonoBehaviour
     /// </summary>
     [ProPlayButton]
     private async Task UpdateSynthDBTimestamps() => await customFileManager.UpdateSynthDBTimestamps();
-
-
 }

@@ -20,6 +20,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public DisplayManager displayManager;
     public SRLogHandler logger;
     private CustomFileManager _customFileManager;
+    public CustomFileManager FileManager => _customFileManager ??= new CustomFileManager(logger);
 
     private bool isMovingFiles = false;
     // public readonly static string synthCustomContentDir = "/sdcard/SynthRidersUC/";
@@ -37,8 +38,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
     public async Task Initialize()
     {
         displayManager.DisableActions("Loading Local Maps...");
-        _customFileManager = new CustomFileManager(logger);
-        await _customFileManager.Initialize();
+        await FileManager.Initialize(Application.exitCancellationToken);
         
         // Immediately migrate old playlist files
         MigratePlaylistsForMixedRealityUpdate();
@@ -339,7 +339,7 @@ public class CustomFileManagerBehaviour : MonoBehaviour
 
     /// Refreshes local database metadata. Parses all missing custom map files.
     /// This saves the updated database.
-    private async Task RefreshLocalDatabase() => await _customFileManager.RefreshLocalDatabase();
+    private async Task RefreshLocalDatabase() => await _customFileManager.RefreshLocalDatabase(Application.exitCancellationToken);
 
     public void SetLastDownloadedTime(DateTime lastDownloadedTime) =>
         _customFileManager.db.SetLastDownloadedTime(lastDownloadedTime);
